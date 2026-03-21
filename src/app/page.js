@@ -73,12 +73,12 @@ export default function Home() {
 
   return (
     <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-6 md:gap-8 mt-12 md:mt-0">
-      
+
       {/* 🟢 Top Header (Login Button) */}
       {!isAuthenticated && (
         <div className="flex justify-end items-center -mb-2">
-          <Link 
-            href="/login" 
+          <Link
+            href="/login"
             className="group relative px-8 py-2.5 rounded-full font-black text-xs md:text-sm uppercase tracking-widest text-white border border-white/10 bg-white/5 overflow-hidden transition-all hover:bg-white/10 hover:border-white/30 hover:scale-105 active:scale-95 shadow-xl"
           >
             <span className="relative z-10">Login</span>
@@ -192,7 +192,7 @@ export default function Home() {
             modules={[Autoplay]}
             spaceBetween={16}
             slidesPerView="auto"
-            loop={trending.length > 5}
+            loop={true}
             autoplay={{
               delay: 4000,
               disableOnInteraction: false,
@@ -263,7 +263,7 @@ export default function Home() {
           <Swiper
             spaceBetween={16}
             slidesPerView="auto"
-            loop={latest.length > 5}
+            loop={true}
             grabCursor={true}
             breakpoints={{
               768: { spaceBetween: 24 }

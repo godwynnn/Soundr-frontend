@@ -18,7 +18,7 @@ function EditPageContent({ trackId }) {
   const [coverImage, setCoverImage] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
   const [existingAudioUrl, setExistingAudioUrl] = useState('');
-  
+
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -96,7 +96,7 @@ function EditPageContent({ trackId }) {
     }, 200);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/edit/${trackId}//`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/edit/${trackId}/`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -190,7 +190,7 @@ function EditPageContent({ trackId }) {
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => setFormData({...formData, title: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors text-lg"
             required
           />
@@ -201,7 +201,7 @@ function EditPageContent({ trackId }) {
           <label className="text-sm font-bold text-gray-300 uppercase tracking-wider">Genre</label>
           <select
             value={formData.genre}
-            onChange={(e) => setFormData({...formData, genre: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
             className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 transition-colors appearance-none cursor-pointer"
             required
           >
@@ -219,7 +219,7 @@ function EditPageContent({ trackId }) {
             type="text"
             placeholder="comma-separated tags"
             value={formData.tags}
-            onChange={(e) => setFormData({...formData, tags: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
             className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
