@@ -23,7 +23,7 @@ export default function PodcastDetailPage() {
   useEffect(() => {
     const fetchPodcast = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/listener/podcasts/${podcastId}/`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/${podcastId}/`);
         if (res.ok) {
           const data = await res.json();
           setPodcast(data.podcast);
@@ -68,7 +68,7 @@ export default function PodcastDetailPage() {
     setIsLiking(true);
     try {
       const accessToken = localStorage.getItem("access_token");
-      const res = await fetch(`http://127.0.0.1:8000/api/listener/podcasts/${podcastId}/like/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/${podcastId}/like/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
@@ -100,7 +100,7 @@ export default function PodcastDetailPage() {
 
     try {
       const accessToken = localStorage.getItem("access_token");
-      const res = await fetch(`http://127.0.0.1:8000/api/listener/podcasts/${podcastId}/comment/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/${podcastId}/comment/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${accessToken}`,
@@ -137,14 +137,14 @@ export default function PodcastDetailPage() {
 
   return (
     <div className="max-w-[1000px] mx-auto w-full flex flex-col gap-8 mt-6 pb-20 animate-in fade-in duration-700">
-      
+
       {/* Hero Section with Player */}
       <div className="relative w-full rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0e0f11] shadow-2xl">
         {/* Visual Background */}
         <div className="absolute inset-0 opacity-20 blur-3xl scale-125 pointer-events-none">
           <img src={podcast.cover_image_url} className="w-full h-full object-cover" alt="" />
         </div>
-        
+
         <div className="relative z-10 flex flex-col md:flex-row gap-8 p-8 md:p-12 items-center md:items-end">
           {/* Cover Art */}
           <div className="w-64 h-64 md:w-80 md:h-80 rounded-3xl overflow-hidden shadow-2xl flex-shrink-0 border border-white/10 ring-8 ring-white/5">
@@ -163,7 +163,7 @@ export default function PodcastDetailPage() {
               {/* Playback Progress */}
               <div className="w-full group/progress cursor-pointer">
                 <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden relative">
-                  <div 
+                  <div
                     className="absolute inset-y-0 left-0 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
@@ -171,7 +171,7 @@ export default function PodcastDetailPage() {
               </div>
 
               <div className="flex items-center justify-between md:justify-start gap-8">
-                <button 
+                <button
                   onClick={handleTogglePlay}
                   className="w-16 h-16 md:w-20 md:h-20 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl"
                 >
@@ -183,14 +183,13 @@ export default function PodcastDetailPage() {
                 </button>
 
                 <div className="flex gap-4">
-                  <button 
+                  <button
                     onClick={handleLike}
                     disabled={isLiking}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-full border transition-all ${
-                      podcast.is_liked 
-                      ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
-                      : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
-                    }`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-full border transition-all ${podcast.is_liked
+                        ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.2)]'
+                        : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                      }`}
                   >
                     <svg className={`w-6 h-6 ${podcast.is_liked ? 'fill-current' : 'none'}`} stroke="currentColor" fill={podcast.is_liked ? "currentColor" : "none"} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -203,9 +202,9 @@ export default function PodcastDetailPage() {
           </div>
         </div>
 
-        <audio 
-          ref={audioRef} 
-          src={podcast.audio_file_url} 
+        <audio
+          ref={audioRef}
+          src={podcast.audio_file_url}
           onTimeUpdate={handleTimeUpdate}
           onEnded={() => setIsPlaying(false)}
         />
@@ -213,7 +212,7 @@ export default function PodcastDetailPage() {
 
       {/* Content & Social Wrapper */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Description & Details */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="bg-[#13151a] border border-white/5 rounded-[2rem] p-8 flex flex-col gap-4">
@@ -232,7 +231,7 @@ export default function PodcastDetailPage() {
             {/* Post Comment */}
             {isAuthenticated ? (
               <form onSubmit={handleComment} className="flex flex-col gap-4">
-                <textarea 
+                <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Share your thoughts..."
@@ -246,7 +245,7 @@ export default function PodcastDetailPage() {
               </form>
             ) : (
               <div className="p-6 border border-dashed border-white/10 rounded-2xl text-center">
-                 <p className="text-gray-500 text-sm">Please <span className="text-indigo-400 cursor-pointer hover:underline" onClick={() => router.push('/login')}>login</span> to join the conversation.</p>
+                <p className="text-gray-500 text-sm">Please <span className="text-indigo-400 cursor-pointer hover:underline" onClick={() => router.push('/login')}>login</span> to join the conversation.</p>
               </div>
             )}
 
@@ -259,15 +258,15 @@ export default function PodcastDetailPage() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                       <span className="font-bold text-white text-sm">{comment.username}</span>
-                       <span className="text-[10px] text-gray-500">{new Date(comment.created_at).toLocaleDateString()}</span>
+                      <span className="font-bold text-white text-sm">{comment.username}</span>
+                      <span className="text-[10px] text-gray-500">{new Date(comment.created_at).toLocaleDateString()}</span>
                     </div>
                     <p className="text-gray-400 text-sm leading-relaxed">{comment.text}</p>
                   </div>
                 </div>
               )) : (
                 <div className="text-center py-8">
-                   <p className="text-gray-600 text-sm">No comments yet. Start the discussion!</p>
+                  <p className="text-gray-600 text-sm">No comments yet. Start the discussion!</p>
                 </div>
               )}
             </div>
@@ -279,18 +278,18 @@ export default function PodcastDetailPage() {
           <div className="bg-[#13151a] border border-white/5 rounded-[2rem] p-6 flex flex-col gap-4">
             <h4 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Podcast Metadata</h4>
             <div className="flex flex-col gap-3">
-               <div className="flex items-center justify-between">
-                 <span className="text-xs text-gray-400">Duration</span>
-                 <span className="text-xs text-white font-medium">{podcast.duration || "N/A"}</span>
-               </div>
-               <div className="flex items-center justify-between">
-                 <span className="text-xs text-gray-400">Uploaded</span>
-                 <span className="text-xs text-white font-medium">{new Date(podcast.created_at).toLocaleDateString()}</span>
-               </div>
-               <div className="flex items-center justify-between">
-                 <span className="text-xs text-gray-400">Status</span>
-                 <span className="text-indigo-400 font-bold text-[10px] uppercase">Public</span>
-               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">Duration</span>
+                <span className="text-xs text-white font-medium">{podcast.duration || "N/A"}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">Uploaded</span>
+                <span className="text-xs text-white font-medium">{new Date(podcast.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">Status</span>
+                <span className="text-indigo-400 font-bold text-[10px] uppercase">Public</span>
+              </div>
             </div>
           </div>
         </div>
