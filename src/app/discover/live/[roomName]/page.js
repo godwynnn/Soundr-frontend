@@ -11,7 +11,7 @@ import { Track } from "livekit-client";
 function HostVideo() {
   const remoteParticipants = useRemoteParticipants();
   // Find the host (the one who is publishing something)
-  const host = remoteParticipants.find(p => p.getTrackPublication(Track.Source.Microphone) || p.getTrackPublication(Track.Source.Camera)) || remoteParticipants[0]; 
+  const host = remoteParticipants.find(p => p.getTrackPublication(Track.Source.Microphone) || p.getTrackPublication(Track.Source.Camera)) || remoteParticipants[0];
 
   if (!host) {
     return (
@@ -91,7 +91,7 @@ export default function LiveSessionPage() {
     const fetchToken = async () => {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const res = await fetch("http://127.0.0.1:8000/api/listener/streams/join-token/", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/streams/join-token/`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -127,7 +127,7 @@ export default function LiveSessionPage() {
 
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/creator/streams/');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/streams/`);
         if (res.ok) {
           const streams = await res.json();
           const stillLive = streams.some(s => s.room_name === roomName && s.is_live);
