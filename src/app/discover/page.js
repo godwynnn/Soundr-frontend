@@ -22,7 +22,7 @@ export default function DiscoverPage() {
   useEffect(() => {
     // Initial fetch for podcasts
     setLoadingPodcasts(true);
-    fetch('http://127.0.0.1:8000/api/listener/podcasts/')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/`)
       .then(res => res.json())
       .then(data => setPodcasts(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to load podcasts:', err))
@@ -32,13 +32,19 @@ export default function DiscoverPage() {
   useEffect(() => {
     if (activeTab === 'live') {
       setLoadingStreams(true);
-      fetch('http://127.0.0.1:8000/api/creator/streams/')
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/streams/`)
         .then(res => res.json())
         .then(data => setLiveStreams(Array.isArray(data) ? data : []))
         .catch(err => console.error('Failed to load streams:', err))
         .finally(() => setLoadingStreams(false));
     }
   }, [activeTab]);
+
+
+
+
+
+
 
   const handleInteraction = (action) => {
     if (!isAuthenticated) {
@@ -138,13 +144,13 @@ export default function DiscoverPage() {
                 </div>
               ) : podcasts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 md:py-16 text-center gap-4 bg-white/5 rounded-[2rem] border border-white/5 mx-2">
-                   <div className="size-16 bg-white/5 rounded-full flex items-center justify-center">
+                  <div className="size-16 bg-white/5 rounded-full flex items-center justify-center">
                     <span className="text-3xl text-gray-400">🎙️</span>
-                   </div>
-                   <div className="flex flex-col gap-1">
+                  </div>
+                  <div className="flex flex-col gap-1">
                     <p className="text-gray-300 font-semibold">No podcasts yet</p>
                     <p className="text-gray-500 text-sm">Be the first to share your voice with the world.</p>
-                   </div>
+                  </div>
                 </div>
               ) : (
                 <Swiper
@@ -159,7 +165,7 @@ export default function DiscoverPage() {
                   {podcasts.map((podcast) => (
                     <SwiperSlide key={podcast.id} className="!w-auto">
                       <div className="flex flex-col gap-3 w-[220px] md:w-[260px] group">
-                        <div 
+                        <div
                           className="w-full aspect-square relative rounded-3xl overflow-hidden shadow-2xl bg-white/5 border border-white/5 cursor-pointer"
                           onClick={() => router.push(`/discover/podcast/${podcast.id}`)}
                         >
