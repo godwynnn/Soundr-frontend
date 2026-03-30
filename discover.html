@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13", // Theme requirement
+                        "accent-purple": "#8b5cf6", // Requested electric purple accent
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0e0f11", // User requested deep dark
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-white/10 flex flex-col bg-background-light dark:bg-background-dark">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-2xl">graphic_eq</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">soundr</h1>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined">library_music</span>
+<span class="font-medium">Library</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary text-white shadow-lg shadow-primary/30 rounded-xl group" href="#">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-medium">Discover</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all rounded-xl group" href="#">
+<span class="material-symbols-outlined">mic</span>
+<span class="font-medium">Podcasts</span>
+</a>
+</nav>
+<div class="p-4 mt-auto">
+<div class="bg-primary/5 dark:bg-white/5 rounded-2xl p-4 border border-primary/10 dark:border-white/5">
+<p class="text-sm font-semibold mb-2">Upgrade to Pro</p>
+<p class="text-xs text-slate-500 mb-4">Unlock spatial audio and ad-free listening.</p>
+<button class="w-full py-2 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all">Go Premium</button>
+</div>
+</div>
+<div class="p-4 border-t border-slate-200 dark:border-white/10 flex items-center gap-3">
+<img alt="Profile" class="size-10 rounded-full border-2 border-primary/20" data-alt="User avatar profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyqg2fpqKrWBLl8x1P4g1s9PXVA5ZnO2xjGOQsUaRhHPO9Chn_ZbdmMlLTYkFNjuMD01kJvaC24AHBJ1CcHoF5_p_fh2UAIr5Uo3787OFHrFZUY3mjNHiERpOjje2McQaPZfIz05csuWxghba94_KojJe7cXJlSXmVsI2iFnNYWeiJzek5eGBBjPQpuI8w5uKDN-uq9yly-wQC-xBxwDbkLosrO7g5j61gFWRR24uyseBUJEmUJ-VAGdAVqd7s_VUd5-BGoans-iM"/>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-bold truncate">Alex Rivera</p>
+<p class="text-xs text-slate-500 truncate">Premium Member</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary transition-colors">settings</span>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 overflow-y-auto no-scrollbar bg-background-light dark:bg-background-dark">
+<!-- Top Header -->
+<header class="flex items-center justify-between px-8 py-6 sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="flex-1 max-w-xl">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-slate-200/50 dark:bg-white/5 border-none focus:ring-2 focus:ring-primary rounded-full pl-12 pr-6 py-2.5 text-sm transition-all outline-none" placeholder="Search artists, songs, or podcasts..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-6">
+<button class="p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full ring-2 ring-background-light dark:ring-background-dark"></span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-all">
+<span class="material-symbols-outlined">equalizer</span>
+</button>
+</div>
+</header>
+<div class="px-8 pb-12">
+<!-- Segmented Control -->
+<div class="flex items-center justify-center mb-10">
+<div class="bg-slate-200 dark:bg-white/5 p-1 rounded-xl flex items-center w-full max-w-md shadow-inner">
+<button class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-primary text-white rounded-lg shadow-lg font-bold transition-all">
+<span class="material-symbols-outlined text-xl">sensors</span>
+                            Live
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium transition-all">
+<span class="material-symbols-outlined text-xl">podcasts</span>
+                            Podcasts
+                        </button>
+</div>
+</div>
+<!-- Section: Live Streams -->
+<div class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-2xl font-bold tracking-tight">Active Live Streams</h2>
+<a class="text-primary font-semibold text-sm hover:underline flex items-center gap-1" href="#">
+                            Explore All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+<!-- Live Card 1 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl mb-3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Energetic concert stage with purple lights" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOJ_sdyJyw_JZkMaKuM5-mJCATf6T9QysIv-bGKif-2N7q7TrQSZUCZi6yTbt7Uhqs9xACd4nOmZQIr51IeLH802TpBJK9iuP_ZyHwsl0TJUxypObKgtfmsyFgpTY2Xr_ltCTiU9ojPd3K2CWWnQ9ZgUx5WQMXdbBKZAoBRKlwzgJXBf1idbUee_JKExRyrRZWAFg50DGmLMXAUAdd5OQqN3XEthASVqB_OgDsKfHwFMdoP_--cN64A41Fv1VyUNRhwF-ur_fNoz4')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded tracking-widest flex items-center gap-1">
+<span class="size-1.5 bg-white rounded-full animate-pulse"></span> LIVE
+                                </div>
+<div class="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">visibility</span> 14.2K
+                                </div>
+<div class="absolute bottom-3 left-3 flex items-center gap-2">
+<img class="size-6 rounded-full border border-white/20" data-alt="DJ performance thumbnail profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd7tfAoYe2BA79phMrtGga8eqC61HssvtDBvuybIynyTfxlDchi21bEJQh90xkuX0TePGzbuDB6yj7X5X5_7lKCxVyYJHRR9_MoizBc5k84PNqRu_r7BlPa6wQhB9YHFHZyF-Xdsl8YjbJHm9IIN7P1_ntNXM7IqnTA5YzLrA7o96-Qn8UjNQsQp_2T23N1enyVPbemkkBa6uctc2PbwZtLZ8JLN_dgyl_rr7VFKst84x_phnVc9H0GTfY2VPzr2aQW2Vy3lMPbyU"/>
+<span class="text-white text-xs font-medium">DJ Solstice</span>
+</div>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">Midnight Lo-fi Beats &amp; Rainy Night Cityscape</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Electronic • Chill</p>
+</div>
+<!-- Live Card 2 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl mb-3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="A person mixing music on a turntable console" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARPRnoNiitcmzo4hk2WRJfWmwVH_2mUYGvezYK6ILrz3lqCEWqeCVlF6uPMd31fUws_LxUQaT-2m8XpX7AZ2qZKepBM6sio-ICs8BHhKWieor4MRo0GxQQPzN3t5-Bs23xA8dkZuKpDBRIX2_m3xU2NPxd6dcXrbi1SSkJ89XXiMaqvNeuVhMEbIDZxdrvhpEf6X1oq4xAbZunVTdQXW6NtQABMIFvNkax2UJHJ3irRcMEd4EabjcpX-cUl9HF82WEqVwxNBxCC8o')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded tracking-widest flex items-center gap-1">
+<span class="size-1.5 bg-white rounded-full animate-pulse"></span> LIVE
+                                </div>
+<div class="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">visibility</span> 8.1K
+                                </div>
+<div class="absolute bottom-3 left-3 flex items-center gap-2">
+<img class="size-6 rounded-full border border-white/20" data-alt="Artist performing live" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDc8HpMCBHk4EVH2ls8xSCRlu5Hmypp6MEXRUzHhg52hvIYliiatE3A4zVWRuVNbVjcFwXIt7P3iesbKbH7Vy1naCPZpV2t86GndsTLsEVGynqLWuUnQYMej2AipCLwnyxGldOhiCXOUvaS_GhLhc_UGf2U3Y7umFhMGGDH4tVrkrR6DekhJfYKFtMumNTxPsM28s1YL1WGw8N-bOqJeR0eiErnTs9TyP6xA31P0dtSGI9NeMsp5FNWRuCWITjm62I-STPW1su7XUg"/>
+<span class="text-white text-xs font-medium">Underground Tech</span>
+</div>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">Techno Summer Rooftop Mix (Berlin)</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Deep House • Techno</p>
+</div>
+<!-- Live Card 3 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl mb-3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Microphone in a professional studio setting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDgngI2GOaoIYLjA-O1SHNPjGuaD04GBHcKRzv8gEgroGlH1GB8XdZRMlUjJR5eDJaq0znDlCSsjVjR8tmHQTiBvVtUSjPxIvo3TPPu7wZYyyS_HkfqALCyShOcg6-A55S_h_4f6RycbsTCA7CqUOl4y9iqBxtLh40zNZv1W9S5S1jiseVRO--2ymeSVIuwnw_ryfULprwTahCkBoJjp3TlsxYwci0OILLvXQASdhwoDrJPv_ajkbolR-bqVvcQQckDn7eXBw5uX-U')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded tracking-widest flex items-center gap-1">
+<span class="size-1.5 bg-white rounded-full animate-pulse"></span> LIVE
+                                </div>
+<div class="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">visibility</span> 2.5K
+                                </div>
+<div class="absolute bottom-3 left-3 flex items-center gap-2">
+<img class="size-6 rounded-full border border-white/20" data-alt="Radio host profile icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqWC6qPfrYC7M-hkA2kVF9bPJ8uiJ4AYLm3IIbIAlUvesavNOkEobI8WSkxLsma0UllXCYRJ1aQzOpv-vizLkesQ_v46z6NdcciLuVXjL_8Ib7ox21amL6-vpZP1q4vIFIDvCCINsK1b0kKe7AdseYEnARK1kx8tFvTFfH1pooWmsoGnVU7_ARge42YeaxQj18X97ApYwmTnixPl6h4DcDtOqOBH7XyMs9BKKUYBDL4qPKSmyj3zVXXJ3WJSAgLJ-8z120aXDGYns"/>
+<span class="text-white text-xs font-medium">The Daily Pulse</span>
+</div>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">Morning Talk: The Future of AI in Music</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Podcast • Discussion</p>
+</div>
+<!-- Live Card 4 -->
+<div class="group cursor-pointer">
+<div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl mb-3">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Violinist performing in a dimly lit hall" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAaxRNZ2-8Mgwp9U52f6d-vtJNDWdXgxoky7tyoc7mkv2p09s2dgfduE-0tJagymVZ8OVJ2cUDrKRaDqpLkg_TiNBCBAixy9VsLRDlwjPa39i2od8Q0UbkaYBIbj1L8JJ579ncYQliiF0dzLOa1LOnB2ZuMMbDmxxR8X5KPnzwV1HHSEgMigOcVNQ40GnEUAQigNiW0wZDFU8GRxR9Dgw2i62xnjvgmfT3nYtwSOP72vBZZCzzX3ZKGHMFMUSQHkD5j5nw6uO3TeB4')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded tracking-widest flex items-center gap-1">
+<span class="size-1.5 bg-white rounded-full animate-pulse"></span> LIVE
+                                </div>
+<div class="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">visibility</span> 1.2K
+                                </div>
+<div class="absolute bottom-3 left-3 flex items-center gap-2">
+<img class="size-6 rounded-full border border-white/20" data-alt="Musician profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCDJYRbykyquMQDxTHqStoGMuwc-Df3xkQon61lTDM91iINt1phKtX2-0bDkDuEFo_mmiGWKZLZqLpWoOrS9hB7qw2XpxTvLgqHLeLFEuGbFC9psR1CiDq3wxLG9tPJrSKaUsRl3UEXs-XUiHInQfgXUaYIlbI2fksh2ui1x1PzXLn0p3wX2689bwompAT3aBJHrA25rRSgMjzsValBtPW1iXopfMwESD7PNXPq7DUyC__tJpW3puEQnmdSeg2bSwBrEOFySXP3aY"/>
+<span class="text-white text-xs font-medium">Clara Strings</span>
+</div>
+</div>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">Solo Violin Improvisations</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Classical • Ambient</p>
+</div>
+</div>
+</div>
+<!-- Trending Podcasts Section (Preview for context) -->
+<div class="mt-16 space-y-6 opacity-40"> <!-- Dimmed because 'Live' is active according to logic -->
+<div class="flex items-center justify-between border-t border-slate-200 dark:border-white/10 pt-12">
+<h2 class="text-2xl font-bold tracking-tight">Trending in Podcasts</h2>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+<div class="space-y-3">
+<div class="aspect-square bg-slate-200 dark:bg-white/5 rounded-2xl overflow-hidden">
+<img class="w-full h-full object-cover grayscale" data-alt="Podcast cover art for deep thoughts" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbwEOrp-D1iIuacpMljyGYi_-Br-R_eEMcARE8PhhCBOk-i2u37GUk2agK9OK_HqFK9mrvFuEP2Ja9NeM6-EYk0R0pX1iE0ouF0KR40wEnqPqUcFrOGHSnvGlikdu5tQN3anRs6ilExhjJao-JjAoCIkMUG5veK9FtSE-cFPigr84H2DcWzBwxwjwjiz6yWrimO6sb-Lwn76Z25NpQ3Ju_HVyzScuPIXX9ME9gl9SI2TlltFlD5WEaLmmdG2v5vsLjSAzZY8vmWao"/>
+</div>
+<div class="h-4 bg-slate-200 dark:bg-white/10 rounded-full w-3/4"></div>
+<div class="h-3 bg-slate-200 dark:bg-white/10 rounded-full w-1/2"></div>
+</div>
+<div class="space-y-3">
+<div class="aspect-square bg-slate-200 dark:bg-white/5 rounded-2xl overflow-hidden">
+<img class="w-full h-full object-cover grayscale" data-alt="Podcast cover art for history series" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCkWtA3caiIZTrJSfC_g4vsNYHgLIE4q-tS7_m_mBJ4W6VlgZ-i3Dtj83TV-pm0Cl7iXQvskhRvX-lIIxkAo-QXWtHUJiVqkCgHE4bUJRZgUzyd1I32pEq4JH0nKrTStAMkwnBldLa6XHhmLcFpGTekmd2ovCgiJ_XN7Mp5VpNxEAmq_kjwkOfztr6th-oBdbJp5tgX28ZA7YLaHpPABz-0eqyhqy3mx2S5Q1WdfOLkf0kExXrVLYscb1yFNvOn49YtLto4vBwmto"/>
+</div>
+<div class="h-4 bg-slate-200 dark:bg-white/10 rounded-full w-3/4"></div>
+<div class="h-3 bg-slate-200 dark:bg-white/10 rounded-full w-1/2"></div>
+</div>
+<div class="hidden md:block space-y-3">
+<div class="aspect-square bg-slate-200 dark:bg-white/5 rounded-2xl overflow-hidden">
+<img class="w-full h-full object-cover grayscale" data-alt="Podcast cover art for technology news" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdlUKO94LGPyqo0HzLiCptu5-nG3Na0FpzzAum_9lm4JiFD4yGgHEFktCJPnRkkCT-3x5J3n-PQb4fJYw2z0H-FZv8Khkww0wr_qGDUXArBsGhQZHkraYBs6eDOqmL8hfJ_-3CUwWmH6UxwCire_7U7XZ4IU9oif_ERy_nGOMNgrinURU2s7q5MtG3EvPxgcFm5pJV2VIUAvHPgijL636HPUjY2f7tmhEWJCiuw0pzfl999TePaqfJSIWyjuZZJfqJrO9fBuKfCD8"/>
+</div>
+<div class="h-4 bg-slate-200 dark:bg-white/10 rounded-full w-3/4"></div>
+<div class="h-3 bg-slate-200 dark:bg-white/10 rounded-full w-1/2"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Player Bar (Mini) -->
+<aside class="w-20 border-l border-slate-200 dark:border-white/10 flex flex-col items-center py-8 gap-8 bg-background-light dark:bg-background-dark">
+<div class="flex flex-col gap-6 items-center">
+<button class="size-12 rounded-full flex items-center justify-center text-slate-500 hover:text-primary transition-all">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="size-12 rounded-full flex items-center justify-center text-slate-500 hover:text-primary transition-all">
+<span class="material-symbols-outlined">queue_music</span>
+</button>
+<button class="size-12 rounded-full flex items-center justify-center text-slate-500 hover:text-primary transition-all">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+<div class="mt-auto flex flex-col gap-4 items-center mb-8">
+<div class="w-1 h-32 bg-slate-200 dark:bg-white/10 rounded-full relative overflow-hidden">
+<div class="absolute bottom-0 left-0 w-full h-2/3 bg-primary"></div>
+</div>
+<span class="material-symbols-outlined text-slate-400">volume_up</span>
+</div>
+<div class="group relative">
+<img class="size-12 rounded-xl object-cover ring-2 ring-primary ring-offset-2 ring-offset-background-dark cursor-pointer group-hover:scale-105 transition-all" data-alt="Currently playing song cover art thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBbN8J6v16VYgbl3JPMd5ubc8osBWMTHjQkqPfJPvtjkURVcobjKv73hKUFf3X0s-6K2EgAWUZ9OObJS9EvQBECnDBsk-UECGMPoP11nDK9Apx3XA-HOXMAPQRqetYLMq5A-XpN8RnWxkVs9u2mqnYlavbTsfYlHeZa7IUVl0gytqrXhdRJ0IFryYAPz1dm9DPdjFHz9EvEPc1aSpBS6JxVnZdKKybVCfq5qcYII5JijLuqKGFKBND4KQ1B2nADUVo936tXc2I7Co"/>
+<div class="absolute inset-0 bg-primary/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white">pause</span>
+</div>
+</div>
+</aside>
+</div>
+</body></html>

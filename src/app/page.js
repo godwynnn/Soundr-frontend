@@ -118,7 +118,7 @@ export default function Home() {
           modules={[EffectFade, Autoplay]}
           effect="fade"
           fadeEffect={{ crossFade: true }}
-          loop={featured.length > 1}
+          loop={latest.length > 1}
           autoplay={{
             delay: 8000,
             disableOnInteraction: false,
@@ -192,7 +192,7 @@ export default function Home() {
             modules={[Autoplay]}
             spaceBetween={16}
             slidesPerView="auto"
-            loop={true}
+            loop={trending.length >= 8}
             autoplay={{
               delay: 4000,
               disableOnInteraction: false,
@@ -212,10 +212,10 @@ export default function Home() {
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300" />
 
                     {/* Centered Play Button */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 flex items-center justify-center md:opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 md:bg-transparent">
                       <button
                         onClick={(e) => handlePlayAction(e, track, trending)}
-                        className="w-12 h-12 lg:w-14 lg:h-14 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-110"
+                        className="w-10 h-10 md:w-12 lg:w-14 lg:h-14 bg-white/20 md:bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl translate-y-0 md:translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-110"
                       >
                         {getPlayIcon(track)}
                       </button>
@@ -263,7 +263,7 @@ export default function Home() {
           <Swiper
             spaceBetween={16}
             slidesPerView="auto"
-            loop={true}
+            loop={latest.length >= 8}
             grabCursor={true}
             breakpoints={{
               768: { spaceBetween: 24 }
@@ -280,7 +280,7 @@ export default function Home() {
                     {/* Play Button Overlay (Bottom Right) */}
                     <div
                       onClick={(e) => handlePlayAction(e, track, latest)}
-                      className="absolute bottom-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-20"
+                      className="absolute bottom-4 right-4 md:translate-y-4 md:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer z-20"
                     >
                       <div className="w-12 h-12 bg-indigo-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-transform">
                         {currentTrack?.id === track.id && isPlaying ? (

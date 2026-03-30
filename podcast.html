@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Soundr | Creator Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#a855f7", // Electric Purple
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0e0f11", // Specified deep dark background
+                        "accent-purple": "#a855f7",
+                        "surface-dark": "#1a1b1e",
+                        "border-dark": "#2d2e32"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: "Public Sans", sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex flex-col min-h-screen">
+<!-- Top Nav Bar -->
+<header class="flex items-center justify-between border-b border-border-dark px-6 py-3 bg-background-dark sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl">graphic_eq</span>
+</div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-tight font-display">Soundr</h2>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">Discover</a>
+<a class="text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">Library</a>
+<a class="text-white border-b-2 border-primary pb-1 text-sm font-medium" href="#">Studio</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden lg:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-xl bg-surface-dark border border-border-dark overflow-hidden">
+<div class="text-slate-400 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-slate-500 text-sm" placeholder="Search tracks, creators..." value=""/>
+</div>
+</label>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-surface-dark border border-border-dark text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-surface-dark border border-border-dark text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-primary/50" data-alt="User profile avatar circle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA1t8JrqAqjW4XaJ8ydwJUY-qOu4L98GAG0mkBQ-I-h4S1cOHMGa13neEL1l3KFWceqJsAJoJIhio8v0o852WPzu4FTSeYDaoxDvS0pbBSZRGDOsP8IrUA-mzl2GN4YnzyiVOQHsCwePJoyd7W-npcr33_p6enaSLgZTI3cbGXvafAHX9fuCiG4s4DEWDYOpr_ZznQOVcoa77bCf_U6fJ8fpRQOUkA_xzkPTB-ux8-SH0x8OYSJnjmvb2SQ20F03euIRj7xHiOzeLw");'></div>
+</div>
+</header>
+<div class="flex flex-1 w-full max-w-[1400px] mx-auto">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex w-64 flex-col border-r border-border-dark p-6 gap-8 bg-background-dark">
+<div class="flex flex-col gap-2">
+<h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Main Menu</h3>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-dark text-slate-300 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">home</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-dark text-slate-300 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">analytics</span>
+<span class="text-sm font-medium">Insights</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/10 text-primary transition-all" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-sm font-semibold">Create</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-dark text-slate-300 hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">folder_open</span>
+<span class="text-sm font-medium">My Content</span>
+</a>
+</div>
+<div class="flex flex-col gap-2">
+<h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">Live Now</h3>
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="relative">
+<div class="size-8 rounded-full bg-slate-700" data-alt="Small user avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCVf9Il6fZSCkJdORHyLmVozYq5gyB7q8vAUVm8E5IYNnaJuE9IYGjMBd9fpmxOggID1ctc7hzEUIjLHKpIOkSG3nGxCRmiNcjqPQ9Z5b5JOeQ0DLwBqkCKxOu1XW6e7hi7E7e7Eakfrww2Mwg-PzMmgvYUY38Otr1DUZ_H3tX9eKiX59xy5gNjam_4Cu-bci4riB6dqw-gV_lfuNmlb5t40bTwMUI8sWHg-Z2NAh6480mSlKj-xIoEV5QkDFsMVquC8_lDXccMLo8");'></div>
+<div class="absolute -bottom-0.5 -right-0.5 size-2.5 bg-red-500 rounded-full border-2 border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-semibold">Deep House Radio</span>
+<span class="text-[10px] text-slate-500">1.2k watching</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto p-6 lg:p-10">
+<div class="max-w-4xl mx-auto">
+<div class="mb-10">
+<h1 class="text-4xl font-black text-white mb-2 tracking-tight">Create Content</h1>
+<p class="text-slate-400">Choose how you want to reach your audience today.</p>
+</div>
+<!-- Toggle Sections -->
+<div class="flex border-b border-border-dark mb-8 gap-10">
+<button class="pb-4 border-b-2 border-primary text-white font-bold text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">upload_file</span>
+                            Upload Episode
+                        </button>
+<button class="pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-300 font-bold text-sm flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-xl">sensors</span>
+                            Go Live
+                        </button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Form Details -->
+<div class="lg:col-span-2 space-y-6">
+<div class="space-y-4">
+<label class="block">
+<span class="text-sm font-semibold text-slate-300 mb-2 block">Episode Title</span>
+<input class="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Enter a catchy title for your podcast" type="text"/>
+</label>
+<label class="block">
+<span class="text-sm font-semibold text-slate-300 mb-2 block">Description</span>
+<textarea class="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all resize-none" placeholder="What is this episode about?" rows="4"></textarea>
+</label>
+<div class="grid grid-cols-2 gap-4">
+<label class="block">
+<span class="text-sm font-semibold text-slate-300 mb-2 block">Category</span>
+<select class="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none">
+<option>Technology</option>
+<option>Music</option>
+<option>True Crime</option>
+<option>Comedy</option>
+<option>Business</option>
+</select>
+</label>
+<label class="block">
+<span class="text-sm font-semibold text-slate-300 mb-2 block">Visibility</span>
+<select class="w-full bg-surface-dark border border-border-dark rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all appearance-none">
+<option>Public</option>
+<option>Unlisted</option>
+<option>Private</option>
+</select>
+</label>
+</div>
+</div>
+<!-- Audio Upload Zone -->
+<div class="p-8 border-2 border-dashed border-border-dark rounded-2xl bg-surface-dark/30 hover:bg-surface-dark/50 hover:border-primary/50 transition-all text-center group cursor-pointer">
+<div class="size-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">mic_external_on</span>
+</div>
+<p class="text-white font-bold mb-1">Drag &amp; drop your audio file</p>
+<p class="text-slate-500 text-sm">MP3, WAV, or M4A up to 500MB</p>
+<button class="mt-4 px-6 py-2 bg-primary/20 text-primary border border-primary/30 rounded-full text-xs font-bold hover:bg-primary hover:text-white transition-all">Select File</button>
+</div>
+</div>
+<!-- Right Column: Media & Actions -->
+<div class="space-y-6">
+<!-- Cover Art Upload -->
+<div class="space-y-4">
+<span class="text-sm font-semibold text-slate-300 block">Cover Art</span>
+<div class="aspect-square w-full bg-surface-dark rounded-2xl border border-border-dark relative overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 flex flex-col items-center justify-center bg-background-dark/60 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+<span class="material-symbols-outlined text-white text-3xl mb-2">add_a_photo</span>
+<span class="text-white text-xs font-bold">Replace Cover</span>
+</div>
+<div class="h-full w-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-surface-dark">
+<span class="material-symbols-outlined text-slate-600 text-6xl">image</span>
+</div>
+</div>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest text-center">Suggested size: 3000x3000px</p>
+</div>
+<!-- Live Preview Mockup -->
+<div class="bg-surface-dark rounded-2xl p-5 border border-border-dark border-t-primary/50 border-t-4">
+<div class="flex items-center justify-between mb-4">
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Go Live Preview</h4>
+<span class="flex size-2 bg-red-500 rounded-full animate-pulse"></span>
+</div>
+<div class="aspect-video bg-background-dark rounded-lg mb-4 flex items-center justify-center overflow-hidden relative">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<span class="material-symbols-outlined text-slate-800 text-7xl">videocam_off</span>
+<div class="absolute bottom-3 left-3 flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/40"></div>
+<div class="w-16 h-2 bg-slate-700 rounded-full"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-symbols-outlined text-lg">mic</span>
+<span class="text-xs">HyperX QuadCast S</span>
+</div>
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-symbols-outlined text-lg">videocam</span>
+<span class="text-xs">Logitech BRIO 4K</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3 pt-4">
+<button class="w-full py-4 bg-primary text-white rounded-xl font-bold text-base hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">rocket_launch</span>
+                                    Publish Episode
+                                </button>
+<button class="w-full py-4 bg-surface-dark text-slate-300 border border-border-dark rounded-xl font-bold text-base hover:bg-slate-800 transition-all">
+                                    Save as Draft
+                                </button>
+<div class="relative py-2 flex items-center">
+<div class="flex-grow border-t border-border-dark"></div>
+<span class="flex-shrink mx-4 text-slate-500 text-xs font-bold uppercase tracking-widest">or</span>
+<div class="flex-grow border-t border-border-dark"></div>
+</div>
+<button class="w-full py-4 bg-transparent border-2 border-red-500/50 text-red-500 rounded-xl font-bold text-base hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">sensors</span>
+                                    Start Broadcast Now
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

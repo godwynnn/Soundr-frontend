@@ -199,7 +199,7 @@ export default function GlobalPlayer() {
 
   if (isMinimized) {
     containerStyles += " bottom-6 left-1/2 -translate-x-1/2";
-    widthClass = "w-[40%] md:w-[50%]";
+    widthClass = "w-[92%] md:w-[60%] lg:w-[45%]";
   } else {
     containerStyles += " bottom-0 left-0 w-full mb-4 px-4";
     widthClass = "w-full";
@@ -207,7 +207,7 @@ export default function GlobalPlayer() {
 
   return (
     <div className={`${containerStyles} ${widthClass}`}>
-      <div className={`relative bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 ${isMinimized ? 'py-3 px-6' : 'py-4 px-8 flex items-center gap-8'}`}>
+      <div className={`relative bg-black/70 backdrop-blur-3xl border border-white/10 rounded-[1.5rem] md:rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 ${isMinimized ? 'py-3 px-4 md:px-6' : 'py-4 px-8 flex items-center gap-8'}`}>
         
         {/* Progress Tracker Line */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/5">
@@ -272,17 +272,17 @@ export default function GlobalPlayer() {
             {/* MOBILE LAYOUT (max-md) */}
             <div className="md:hidden flex flex-col w-full gap-4">
                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-lg border border-white/5">
                       <img src={currentTrack.cover_image_url} alt="" className="w-full h-full object-cover" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <h4 className="text-white font-black text-sm truncate tracking-tight">{currentTrack.title}</h4>
                       <p className="text-xs text-gray-400 truncate">{currentTrack.artist}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button onClick={() => dispatch(togglePlay())} className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-xl active:scale-95 transition-transform">
                       {isPlaying ? <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg className="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>}
                     </button>
@@ -338,14 +338,14 @@ export default function GlobalPlayer() {
 
         {/* MINIMIZED LAYOUT */}
         {isMinimized && (
-          <div className="flex items-center justify-between w-full h-full gap-2">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-               <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 shadow-md">
+          <div className="flex items-center justify-between w-full h-full gap-3 md:gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+               <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-xl border border-white/10">
                  <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
                </div>
-               <div className="min-w-0 hidden md:block">
-                 <h4 className="text-white font-bold text-xs truncate leading-tight">{currentTrack.title}</h4>
-                 <p className="text-[10px] text-gray-400 truncate mt-0.5">{currentTrack.artist}</p>
+               <div className="min-w-0 flex-1">
+                 <h4 className="text-white font-bold text-xs md:text-sm truncate leading-tight tracking-tight">{currentTrack.title}</h4>
+                 <p className="text-[10px] md:text-xs text-gray-400 truncate mt-0.5">{currentTrack.artist}</p>
                </div>
             </div>
             
