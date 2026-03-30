@@ -31,11 +31,10 @@ function SelfView({ isCameraOn, onToggleCamera }) {
       {/* Camera toggle button overlaid on preview */}
       <button
         onClick={onToggleCamera}
-        className={`absolute bottom-3 right-3 p-2.5 rounded-full border transition-all ${
-          isCameraOn
+        className={`absolute bottom-3 right-3 p-2.5 rounded-full border transition-all ${isCameraOn
             ? 'bg-white text-black border-white hover:bg-white/80'
             : 'bg-black/60 text-white border-white/20 hover:bg-black/80 backdrop-blur-md'
-        }`}
+          }`}
         title={isCameraOn ? 'Turn off camera' : 'Turn on camera'}
       >
         {isCameraOn ? (
@@ -120,7 +119,7 @@ export default function CreatorPodcastsPage() {
 
       const token = localStorage.getItem('access_token');
 
-      const response = await fetch('http://127.0.0.1:8000/api/creator/podcast/upload/', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/podcast/upload/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -158,7 +157,7 @@ export default function CreatorPodcastsPage() {
     if (activeRoomName) {
       try {
         const token = localStorage.getItem('access_token');
-        await fetch('http://127.0.0.1:8000/api/creator/streams/end/', {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/streams/end/`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ room: activeRoomName }),
@@ -182,7 +181,7 @@ export default function CreatorPodcastsPage() {
       setIsConnecting(true);
       try {
         const token = localStorage.getItem('access_token');
-        const response = await fetch('http://127.0.0.1:8000/api/creator/podcast/live-token/', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/podcast/live-token/`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -193,23 +192,23 @@ export default function CreatorPodcastsPage() {
         console.log(response)
 
         if (response.ok) {
-           const data = await response.json();
-           setLiveToken(data.token);
-           setServerUrl(data.url);
-           const room = data.room;
-           setActiveRoomName(room);
+          const data = await response.json();
+          setLiveToken(data.token);
+          setServerUrl(data.url);
+          const room = data.room;
+          setActiveRoomName(room);
 
-           // Register the live session so Discover page can list it
-           const streamTitle = `${user?.username || 'Creator'}'s Live Session`;
-           const authToken = localStorage.getItem('access_token');
-           await fetch('http://127.0.0.1:8000/api/creator/streams/start/', {
-             method: 'POST',
-             headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-             body: JSON.stringify({ room, title: streamTitle }),
-           });
+          // Register the live session so Discover page can list it
+          const streamTitle = `${user?.username || 'Creator'}'s Live Session`;
+          const authToken = localStorage.getItem('access_token');
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/streams/start/`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ room, title: streamTitle }),
+          });
 
-           setIsLive(true);
-           setLiveListeners(1);
+          setIsLive(true);
+          setLiveListeners(1);
         } else {
           alert("Failed to connect to LiveKit server. Ensure your backend has valid credentials.");
         }
@@ -372,8 +371,8 @@ export default function CreatorPodcastsPage() {
                       type="submit"
                       disabled={isSubmitting}
                       className={`w-full py-3.5 rounded-xl font-bold tracking-widest text-sm transition-all shadow-lg ${isSubmitting
-                          ? 'bg-[#a855f7]/50 text-white/50 cursor-not-allowed'
-                          : 'bg-[#a855f7] text-white hover:brightness-110 active:scale-95'
+                        ? 'bg-[#a855f7]/50 text-white/50 cursor-not-allowed'
+                        : 'bg-[#a855f7] text-white hover:brightness-110 active:scale-95'
                         }`}
                     >
                       {isSubmitting ? 'Uploading...' : 'Publish Episode'}
@@ -465,9 +464,9 @@ export default function CreatorPodcastsPage() {
                     onClick={toggleLiveStream}
                     disabled={isConnecting}
                     className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] ${isConnecting ? 'bg-red-500/50 text-white/50 cursor-not-allowed border-2 border-transparent' :
-                        isLive
-                          ? 'bg-transparent border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
-                          : 'bg-red-600 border-2 border-red-600 text-white hover:bg-red-500 hover:border-red-500'
+                      isLive
+                        ? 'bg-transparent border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
+                        : 'bg-red-600 border-2 border-red-600 text-white hover:bg-red-500 hover:border-red-500'
                       }`}
                   >
                     {isConnecting ? 'Connecting...' : isLive ? 'End Stream' : 'Start Live Session'}
