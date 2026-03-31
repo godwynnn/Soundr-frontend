@@ -16,6 +16,7 @@ export default function SongDetail({ params }) {
   const { currentTrack, isPlaying } = useSelector((state) => state.player);
 
   const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [song, setSong] = useState(null);
   const [hypeCount, setHypeCount] = useState(0);
@@ -40,6 +41,7 @@ export default function SongDetail({ params }) {
          setSong(data);
          setHypeCount(data.hype_count || 0);
          setLiked(data.is_liked || false);
+         setLikesCount(data.likes_count || 0);
          setIsLoading(false);
        })
       .catch(err => {
@@ -94,6 +96,7 @@ export default function SongDetail({ params }) {
       if (res.ok) {
         const data = await res.json();
         setLiked(data.liked);
+        setLikesCount(data.likes_count);
       }
     } catch (err) {
       console.error("Like failed:", err);
@@ -170,9 +173,10 @@ export default function SongDetail({ params }) {
                 <>
                   <button 
                      onClick={handleLike}
-                     className={`w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors ${liked ? 'bg-pink-500/20' : ''}`}
+                     className={`h-12 px-5 rounded-full border border-white/20 flex items-center justify-center gap-2 hover:bg-white/10 transition-colors ${liked ? 'bg-pink-500/20 border-pink-500/50' : ''}`}
                   >
                      <svg className={`w-5 h-5 ${liked ? 'text-pink-500 fill-current' : 'text-white'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                     <span className={`text-sm font-bold ${liked ? 'text-pink-100' : 'text-white'}`}>{likesCount}</span>
                   </button>
                   <button className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors">
                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
