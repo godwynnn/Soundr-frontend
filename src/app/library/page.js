@@ -175,9 +175,11 @@ function EmptyState({ icon, title, message }) {
                     {message}
                 </p>
             </div>
-            <button className="mt-4 px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20">
-                Explore Soundr
-            </button>
+            <Link href="/">
+                <button className="mt-4 px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20">
+                    Explore Soundr
+                </button>
+            </Link>
         </div>
     );
 }
