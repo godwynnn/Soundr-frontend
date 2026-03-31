@@ -126,7 +126,7 @@ export default function DiscoverPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">Discover</h1>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">Discover</h1>
         <p className="text-gray-400 font-medium text-sm max-w-2xl">
           Explore the latest podcasts, exclusive shows, and jump into vibrant live sessions from your favorite creators.
         </p>
@@ -326,7 +326,7 @@ export default function DiscoverPage() {
                             }
                             router.push(`/discover/live/${stream.room_name}`);
                           }}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:scale-105 transition-transform active:scale-95"
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:scale-105 transition-transform active:scale-95 border border-white/10"
                         >
                           Join Session
                         </button>

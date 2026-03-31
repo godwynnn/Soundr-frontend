@@ -83,7 +83,7 @@ function LibraryContent() {
                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white">Your Library</h1>
+                            <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-white">Your Library</h1>
                         </div>
                         <p className="text-gray-400 font-medium text-sm max-w-xl">
                             Everything you love, saved and organized in one place.
