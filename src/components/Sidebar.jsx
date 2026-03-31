@@ -1,7 +1,7 @@
 "use client";
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '@/store/authSlice';
 import SearchModal from './SearchModal';
@@ -9,17 +9,25 @@ import SearchModal from './SearchModal';
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
+
+  const activeTab = searchParams.get('tab') || 'liked';
 
   const { isAuthenticated, user, isRehydrated } = useSelector((state) => state.auth);
 
   const isCreatorInitial = pathname.startsWith('/creator');
+  const [mounted, setMounted] = useState(false);
   const [isCreator, setIsCreator] = useState(isCreatorInitial);
   const [isOpen, setIsOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
-  if (!isRehydrated) return null; // Moved after all hooks to comply with Rules of Hooks
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !isRehydrated) return null;
 
   const handleToggle = (creatorMode) => {
     setIsCreator(creatorMode);
@@ -43,7 +51,7 @@ export default function Sidebar() {
     dispatch(logout());
     setIsCreator(false);
     setAccountMenuOpen(false);
-    
+
     // Only redirect if on a protected creator page
     if (pathname.startsWith('/creator')) {
       router.push('/');
@@ -104,11 +112,11 @@ export default function Sidebar() {
             <svg className="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
             <span className="text-base">Home</span>
           </Link>
-          <button 
+          <button
             onClick={() => {
               setSearchModalOpen(true);
               setIsOpen(false);
-            }} 
+            }}
             className="flex items-center gap-4 px-3 py-2.5 text-gray-400 hover:text-white transition-colors font-medium w-full text-left"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -118,12 +126,35 @@ export default function Sidebar() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
             <span className="text-base">{isCreator ? 'Podcast' : 'Discover'}</span>
           </Link>
-          <Link href="#library" onClick={() => setIsOpen(false)} className="flex items-center gap-4 px-3 py-2.5 text-gray-400 hover:text-white transition-colors font-medium">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-            <span className="text-base">Library</span>
-          </Link>
+          {isAuthenticated && (
+            <>
+              <Link href="/library" onClick={() => setIsOpen(false)} className={`flex items-center gap-4 px-3 py-2.5 text-gray-400 hover:text-white transition-colors font-medium ${pathname === '/library' ? 'bg-white/10 text-white' : ''}`}>
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                <span className="text-base text-current">Library</span>
+              </Link>
+
+              {/* Library Sub-menu */}
+              {(pathname === '/library' || pathname.startsWith('/library')) && (
+                <div className="flex flex-col gap-1 ml-9 mt-1 mb-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Link href="/library?tab=liked" className={`text-sm py-1.5 px-2 rounded-lg transition-colors ${activeTab === 'liked' ? 'text-indigo-400 font-bold' : 'text-gray-500 hover:text-gray-300'}`}>
+                    Liked Songs
+                  </Link>
+                  <Link href="/library?tab=playlists" className={`text-sm py-1.5 px-2 rounded-lg transition-colors ${activeTab === 'playlists' ? 'text-indigo-400 font-bold' : 'text-gray-500 hover:text-gray-300'}`}>
+                    Saved Playlists
+                  </Link>
+                  <Link href="/library?tab=artists" className={`text-sm py-1.5 px-2 rounded-lg transition-colors ${activeTab === 'artists' ? 'text-indigo-400 font-bold' : 'text-gray-500 hover:text-gray-300'}`}>
+                    Followed Artists
+                  </Link>
+                  <Link href="/library?tab=downloads" className={`text-sm py-1.5 px-2 rounded-lg transition-colors ${activeTab === 'downloads' ? 'text-indigo-400 font-bold' : 'text-gray-500 hover:text-gray-300'}`}>
+                    Recent Downloads
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
         </nav>
 
+        {/* {isAuthenticated && ( */}
         <div className="mt-8 px-3">
           <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Playlists</h3>
           <div className="flex flex-col gap-3">
@@ -133,6 +164,7 @@ export default function Sidebar() {
             <Link href="#" className="text-sm font-medium text-gray-400 hover:text-white transition-colors truncate">Workout Energy</Link>
           </div>
         </div>
+        {/* )} */}
 
         {/* Account Section */}
         <div className="relative mt-auto px-3 border-t border-white/5 pt-6">
@@ -149,7 +181,7 @@ export default function Sidebar() {
                 <span className="text-xs text-gray-500">{isAuthenticated ? 'Free Tier' : 'Guest'}</span>
               </div>
             </div>
-            <svg className={`w-4 h-4 text-gray-400 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+            <svg className={`w-4 h-4 text-gray-400 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
           </button>
 
           {accountMenuOpen && (
@@ -169,9 +201,9 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      <SearchModal 
-        isOpen={searchModalOpen} 
-        onClose={() => setSearchModalOpen(false)} 
+      <SearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
       />
     </>
   );

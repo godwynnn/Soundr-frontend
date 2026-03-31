@@ -372,7 +372,7 @@ export default function CreatorPodcastsPage() {
                       disabled={isSubmitting}
                       className={`w-full py-3.5 rounded-xl font-bold tracking-widest text-sm transition-all shadow-lg ${isSubmitting
                         ? 'bg-[#a855f7]/50 text-white/50 cursor-not-allowed'
-                        : 'bg-[#a855f7] text-white hover:brightness-110 active:scale-95'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-[0_0_20px_rgba(79,70,229,0.4)]'
                         }`}
                     >
                       {isSubmitting ? 'Uploading...' : 'Publish Episode'}

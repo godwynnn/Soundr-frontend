@@ -12,33 +12,48 @@ import 'swiper/css';
 
 export default function DiscoverPage() {
   const router = useRouter();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, accessToken } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState('podcasts');
   const [liveStreams, setLiveStreams] = useState([]);
   const [loadingStreams, setLoadingStreams] = useState(false);
   const [podcasts, setPodcasts] = useState([]);
   const [loadingPodcasts, setLoadingPodcasts] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Initial fetch for podcasts
     setLoadingPodcasts(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/`)
+    const headers = {};
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/`, { headers })
       .then(res => res.json())
       .then(data => setPodcasts(Array.isArray(data) ? data : []))
       .catch(err => console.error('Failed to load podcasts:', err))
       .finally(() => setLoadingPodcasts(false));
-  }, []);
+  }, [accessToken]);
 
   useEffect(() => {
     if (activeTab === 'live') {
       setLoadingStreams(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/streams/`)
+      const headers = {};
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/creator/streams/`, { headers })
         .then(res => res.json())
         .then(data => setLiveStreams(Array.isArray(data) ? data : []))
         .catch(err => console.error('Failed to load streams:', err))
         .finally(() => setLoadingStreams(false));
     }
-  }, [activeTab]);
+  }, [activeTab, accessToken]);
 
 
 
@@ -46,19 +61,38 @@ export default function DiscoverPage() {
 
 
 
-  const handleInteraction = (action) => {
+  const handleInteraction = async (action, id) => {
     if (!isAuthenticated) {
       alert(`You must be logged in to ${action}. Redirecting to login...`);
       router.push('/login');
       return;
     }
-    // TODO: implement logic
-    console.log(`${action} triggered!`);
-    alert(`${action} successful! (Mock Action)`);
+    
+    if (action === 'Like') {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/podcasts/${id}/like/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Update local state to reflect the like
+          setPodcasts(prev => prev.map(p => p.id === id ? { ...p, is_liked: data.liked } : p));
+        }
+      } catch (err) {
+        console.error("Like failed:", err);
+      }
+    } else {
+      console.log(`${action} triggered for ${id}!`);
+      alert(`${action} successful! (Mock Action for ${id})`);
+    }
   };
 
-  const HeartIcon = () => (
-    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  const HeartIcon = ({ liked }) => (
+    <svg className={`w-5 h-5 flex-shrink-0 ${liked ? 'fill-current text-pink-400' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   );
@@ -93,34 +127,34 @@ export default function DiscoverPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">Discover</h1>
-        <p className="text-gray-400 font-medium text-sm md:text-base max-w-2xl">
+        <p className="text-gray-400 font-medium text-sm max-w-2xl">
           Explore the latest podcasts, exclusive shows, and jump into vibrant live sessions from your favorite creators.
         </p>
       </div>
 
       {/* Segmented Control Toggle */}
-      <div className="flex items-center justify-center -mt-2 mb-4">
-        <div className="bg-[#13151a] border border-white/5 p-1.5 rounded-2xl flex items-center w-full max-w-[360px] shadow-inner relative">
-          {/* Animated Background Pill */}
-          <div
-            className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-indigo-900 rounded-xl transition-transform duration-300 ease-out shadow-lg ${activeTab === 'podcasts' ? 'translate-x-0' : 'translate-x-full ml-3'
-              }`}
-          />
-
+      <div className="flex items-center justify-start mb-6">
+        <div className="flex items-center gap-8 relative border-b border-white/5 w-full">
           <button
             onClick={() => setActiveTab('podcasts')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all relative z-10 ${activeTab === 'podcasts' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+            className={`flex items-center gap-2 pb-3 px-1 font-bold transition-all relative ${activeTab === 'podcasts' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
               }`}
           >
-            <span className="text-xl">🎙️</span> Podcasts
+            <span className="text-lg">🎙️</span> Podcasts
+            {activeTab === 'podcasts' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />
+            )}
           </button>
 
           <button
             onClick={() => setActiveTab('live')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all relative z-10 ${activeTab === 'live' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
+            className={`flex items-center gap-2 pb-3 px-1 font-bold transition-all relative ${activeTab === 'live' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
               }`}
           >
-            <span className="text-xl">🎥</span> Live
+            <span className="text-lg">🎥</span> Live
+            {activeTab === 'live' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full" />
+            )}
           </button>
         </div>
       </div>
@@ -190,24 +224,30 @@ export default function DiscoverPage() {
                           </button>
 
                           {/* Interaction buttons bottom overlay */}
-                          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-y-2 group-hover:translate-y-0">
-                            <div className="flex gap-2">
-                              <button onClick={(e) => { e.stopPropagation(); handleInteraction('Like'); }} className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Like">
-                                <HeartIcon />
-                              </button>
-                              <button onClick={() => handleInteraction('Comment')} className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Comment">
-                                <CommentIcon />
-                              </button>
+                          {mounted && isAuthenticated && (
+                            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-y-2 group-hover:translate-y-0">
+                              <div className="flex gap-2">
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); handleInteraction('Like', podcast.id); }} 
+                                  className={`p-2 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg ${podcast.is_liked ? 'bg-pink-500/50 hover:bg-pink-500/70' : 'bg-white/10 hover:bg-white/20'}`} 
+                                  title="Like"
+                                >
+                                  <HeartIcon liked={podcast.is_liked} />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); handleInteraction('Comment', podcast.id); }} className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Comment">
+                                  <CommentIcon />
+                                </button>
+                              </div>
+                              <div className="flex gap-2">
+                                <button onClick={(e) => { e.stopPropagation(); handleInteraction('Support', podcast.id); }} className="p-2 bg-white/10 hover:bg-green-500/50 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Support">
+                                  <SupportIcon />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); handleInteraction('Hype', podcast.id); }} className="p-2 bg-white/10 hover:bg-pink-500/50 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Hype">
+                                  <HypeIcon />
+                                </button>
+                              </div>
                             </div>
-                            <div className="flex gap-2">
-                              <button onClick={() => handleInteraction('Support')} className="p-2 bg-white/10 hover:bg-green-500/50 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Support">
-                                <SupportIcon />
-                              </button>
-                              <button onClick={() => handleInteraction('Hype')} className="p-2 bg-white/10 hover:bg-pink-500/50 backdrop-blur-md rounded-full text-white transition-colors border border-white/10 shadow-lg" title="Hype">
-                                <HypeIcon />
-                              </button>
-                            </div>
-                          </div>
+                          )}
                         </div>
                         <div className="flex flex-col px-1">
                           <span className="font-bold text-white text-base leading-tight mb-1 truncate hover:underline cursor-pointer decoration-white/30">
@@ -286,19 +326,21 @@ export default function DiscoverPage() {
                             }
                             router.push(`/discover/live/${stream.room_name}`);
                           }}
-                          className="bg-white text-black px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold shadow-lg hover:scale-105 transition-transform active:scale-95"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:scale-105 transition-transform active:scale-95"
                         >
                           Join Session
                         </button>
 
-                        <div className="flex gap-2">
-                          <button onClick={(e) => { e.stopPropagation(); handleInteraction('Like'); }} className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors border border-white/5 shadow-lg" title="Like">
-                            <HeartIcon />
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); handleInteraction('Hype'); }} className="p-2 bg-white/10 hover:bg-pink-500/50 backdrop-blur-md rounded-full text-white transition-colors border border-white/5 shadow-lg" title="Hype">
-                            <HypeIcon />
-                          </button>
-                        </div>
+                        {mounted && isAuthenticated && (
+                          <div className="flex gap-2">
+                            <button onClick={(e) => { e.stopPropagation(); handleInteraction('Like', stream.id); }} className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-colors border border-white/5 shadow-lg" title="Like">
+                              <HeartIcon />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); handleInteraction('Hype', stream.id); }} className="p-2 bg-white/10 hover:bg-pink-500/50 backdrop-blur-md rounded-full text-white transition-colors border border-white/5 shadow-lg" title="Hype">
+                              <HypeIcon />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -30,6 +30,7 @@ export default function GlobalPlayer() {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState('0:00');
   const [duration, setDuration] = useState('0:00');
+  const [isBuffering, setIsBuffering] = useState(false);
   const [howl, setHowl] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
 
@@ -59,9 +60,14 @@ export default function GlobalPlayer() {
         },
         onload: () => {
           setDuration(formatTime(newHowl.duration()));
+          setIsBuffering(false);
+        },
+        onloaderror: () => {
+          setIsBuffering(false);
         }
       });
 
+      setIsBuffering(true);
       setHowl(newHowl);
       if (isPlaying) newHowl.play();
 
@@ -130,6 +136,12 @@ export default function GlobalPlayer() {
 
   if (!currentTrack || !isRehydrated) return null;
 
+  const LoadingOverlay = () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] z-10 animate-in fade-in duration-300">
+      <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
   // LAYOUT CALCULATIONS
   // 1. Auth Page:
   //    - Mobile: Mini-Square
@@ -143,6 +155,7 @@ export default function GlobalPlayer() {
         
         {/* MOBILE: Mini-Square */}
         <div className="md:hidden relative w-16 h-16 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black/40 backdrop-blur-md transition-all duration-300">
+           {isBuffering && <LoadingOverlay />}
            <img src={currentTrack.cover_image_url} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
            <div 
              onClick={() => dispatch(togglePlay())}
@@ -167,7 +180,10 @@ export default function GlobalPlayer() {
               <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${progress}%` }} />
            </div>
            <div className="flex items-center gap-3 overflow-hidden">
-              <img src={currentTrack.cover_image_url} className="w-10 h-10 rounded-lg object-cover" alt="" />
+              <div className="relative w-10 h-10 shrink-0 rounded-lg overflow-hidden">
+                {isBuffering && <LoadingOverlay />}
+                <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
+              </div>
               <div className="min-w-0">
                 <h4 className="text-white font-bold text-xs truncate leading-none">{currentTrack.title}</h4>
                 <p className="text-[10px] text-gray-400 truncate mt-1">{currentTrack.artist}</p>
@@ -220,7 +236,8 @@ export default function GlobalPlayer() {
             {/* DESKTOP LAYOUT (md+) */}
             <div className="hidden md:flex items-center gap-8 w-full">
               <div className="flex items-center gap-4 w-1/4 min-w-0">
-                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                  {isBuffering && <LoadingOverlay />}
                   <img src={currentTrack.cover_image_url} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
@@ -273,7 +290,8 @@ export default function GlobalPlayer() {
             <div className="md:hidden flex flex-col w-full gap-4">
                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-lg border border-white/5">
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 shadow-lg border border-white/5">
+                      {isBuffering && <LoadingOverlay />}
                       <img src={currentTrack.cover_image_url} alt="" className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -340,7 +358,8 @@ export default function GlobalPlayer() {
         {isMinimized && (
           <div className="flex items-center justify-between w-full h-full gap-3 md:gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
-               <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-xl border border-white/10">
+               <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-xl border border-white/10">
+                 {isBuffering && <LoadingOverlay />}
                  <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
                </div>
                <div className="min-w-0 flex-1">
