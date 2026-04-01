@@ -214,7 +214,7 @@ function SongCard({ song, onClick }) {
                 {/* Play Button Overlay */}
                 <button
                     onClick={handlePlayPause}
-                    className="absolute inset-0 m-auto w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 hover:scale-110 z-20"
+                    className="absolute inset-0 m-auto w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-2xl opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-all duration-500 hover:scale-110 z-20"
                 >
                     {isCurrentPlaying ? (
                         <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
