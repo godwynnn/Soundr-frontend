@@ -86,29 +86,56 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🔥 Trending Now (Top Marquee) */}
-      <section className="w-full bg-black/40 border border-white/10 rounded-2xl py-3 overflow-hidden flex items-center whitespace-nowrap shadow-lg">
-        <div className="animate-[marquee_20s_linear_infinite] flex gap-12 text-sm font-medium uppercase tracking-widest text-gray-300">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex gap-12">
-              {trending.map(t => (
-                <span key={t.id} className="flex items-center gap-2">
-                  <span className="text-pink-500">🔥</span> {t.artist} - {t.title}
-                </span>
+      {/* 🚀 New Refined Trending Ticker */}
+      <section className="w-full h-12 relative flex items-center bg-black/40 border-y border-white/5 overflow-hidden group">
+        {/* Fixed Badge */}
+        <div className="absolute left-0 top-0 bottom-0 z-20 flex items-center px-6 bg-gradient-to-r from-black via-black/90 to-transparent pointer-events-none">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-pink-500"></span>
+            </span>
+            <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-white">Trending</span>
+          </div>
+        </div>
+
+        {/* Scrolling Content */}
+        <div className="flex items-center gap-12 animate-[marquee_25s_linear_infinite] pl-[120px] md:pl-[150px]">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="flex gap-12 items-center flex-nowrap">
+              {trending.map((t, idx) => (
+                <div key={`${t.id}-${idx}`} className="flex items-center gap-4 whitespace-nowrap">
+                  <span className="text-white font-bold text-sm md:text-base tracking-tight hover:text-indigo-400 transition-colors cursor-pointer capitalize">
+                    {t.title}
+                  </span>
+                  <span className="text-gray-500 text-xs">—</span>
+                  <span className="text-gray-400 font-medium text-xs md:text-sm uppercase tracking-wider">
+                    {t.artist}
+                  </span>
+                  <span className="text-white/10 text-xl font-thin mx-2">/</span>
+                </div>
               ))}
               {trending.length === 0 && (
-                <span className="flex items-center gap-2"><span className="text-pink-500">🔥</span> Asake - Lonely At The Top</span>
+                <div className="flex items-center gap-4 whitespace-nowrap">
+                  <span className="text-white font-bold text-sm md:text-base tracking-tight hover:text-indigo-400 transition-colors cursor-pointer capitalize">Lonely At The Top</span>
+                  <span className="text-gray-500 text-xs">—</span>
+                  <span className="text-gray-400 font-medium text-xs md:text-sm uppercase tracking-wider">Asake</span>
+                  <span className="text-white/10 text-xl font-thin mx-2">/</span>
+                </div>
               )}
             </div>
           ))}
         </div>
+
+        {/* Right Gradient Fade */}
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none"></div>
       </section>
 
       <style dangerouslySetInnerHTML={{
         __html: `
         @keyframes marquee {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.33%); }
         }
       `}} />
 
