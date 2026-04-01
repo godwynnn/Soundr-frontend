@@ -126,9 +126,9 @@ export default function DiscoverPage() {
 
       {/* Header */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-2">Discover</h1>
+        <h1 className="text-3xl md:text-3xl font-black tracking-tight text-white mb-2">Discover</h1>
         <p className="text-gray-400 font-medium text-sm max-w-2xl">
-          Explore the latest podcasts, exclusive shows, and jump into vibrant live sessions from your favorite creators.
+          Explore the latest podcasts, exclusive shows, and jump into vibrant live sessions.
         </p>
       </div>
 
@@ -320,13 +320,12 @@ export default function DiscoverPage() {
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!isAuthenticated) {
-                              alert('You must be logged in to join a live session. Redirecting...');
                               router.push('/login');
                               return;
                             }
                             router.push(`/discover/live/${stream.room_name}`);
                           }}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:scale-105 transition-transform active:scale-95 border border-white/10"
+                          className="bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-[13px] md:text-sm font-bold shadow-[0_0_20px_rgba(225,29,72,0.4)] hover:scale-105 transition-transform active:scale-95 border border-white/10"
                         >
                           Join Session
                         </button>

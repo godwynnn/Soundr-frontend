@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import AuthGuard from "@/components/AuthGuard";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import { LiveKitRoom, RoomAudioRenderer, ControlBar, VideoTrack, useLocalParticipant } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
@@ -76,6 +77,7 @@ export default function CreatorPodcastsPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [activeRoomName, setActiveRoomName] = useState("");
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
 
   const handleInputChange = (e) => {
@@ -174,9 +176,7 @@ export default function CreatorPodcastsPage() {
 
   const toggleLiveStream = async () => {
     if (isLive) {
-      if (confirm("Are you sure you want to end your live session?")) {
-        endStream();
-      }
+      setIsConfirmModalOpen(true);
     } else {
       setIsConnecting(true);
       try {
@@ -227,8 +227,8 @@ export default function CreatorPodcastsPage() {
 
         {/* Header */}
         <div className="mb-2 md:mb-6">
-          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">Create Content</h1>
-          <p className="text-gray-400 font-medium text-sm md:text-base">Choose how you want to reach your audience today.</p>
+          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">Create Content</h1>
+          <p className="text-gray-400 font-medium text-sm">Choose how you want to reach your audience today.</p>
         </div>
 
         {/* Toggle Sections (Tabs) */}
@@ -372,7 +372,7 @@ export default function CreatorPodcastsPage() {
                       disabled={isSubmitting}
                       className={`w-full py-3.5 rounded-xl font-bold tracking-widest text-sm transition-all shadow-lg ${isSubmitting
                         ? 'bg-[#a855f7]/50 text-white/50 cursor-not-allowed'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-[0_0_20px_rgba(79,70,229,0.4)]'
+                        : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                         }`}
                     >
                       {isSubmitting ? 'Uploading...' : 'Publish Episode'}
@@ -463,10 +463,10 @@ export default function CreatorPodcastsPage() {
                   <button
                     onClick={toggleLiveStream}
                     disabled={isConnecting}
-                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(239,68,68,0.3)] ${isConnecting ? 'bg-red-500/50 text-white/50 cursor-not-allowed border-2 border-transparent' :
+                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isConnecting ? 'bg-red-500/50 text-white/50 cursor-not-allowed border-2 border-transparent' :
                       isLive
-                        ? 'bg-transparent border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white'
-                        : 'bg-red-600 border-2 border-red-600 text-white hover:bg-red-500 hover:border-red-500'
+                        ? 'bg-transparent border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white shadow-[0_0_20px_rgba(239,68,68,0.2)]'
+                        : 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white shadow-[0_0_25px_rgba(225,29,72,0.5)]'
                       }`}
                   >
                     {isConnecting ? 'Connecting...' : isLive ? 'End Stream' : 'Start Live Session'}
@@ -477,6 +477,16 @@ export default function CreatorPodcastsPage() {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={endStream}
+        title="End Live Stream?"
+        message="Are you sure you want to end your live session? This will disconnect all currently connected listeners."
+        confirmText="End Stream"
+        type="danger"
+      />
     </AuthGuard>
   );
 }

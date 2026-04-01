@@ -192,7 +192,7 @@ export default function Home() {
             modules={[Autoplay]}
             spaceBetween={16}
             slidesPerView="auto"
-            loop={trending.length >= 8}
+            loop={true}
             autoplay={{
               delay: 4000,
               disableOnInteraction: false,
@@ -263,7 +263,7 @@ export default function Home() {
           <Swiper
             spaceBetween={16}
             slidesPerView="auto"
-            loop={latest.length >= 8}
+            loop={true}
             grabCursor={true}
             breakpoints={{
               768: { spaceBetween: 24 }

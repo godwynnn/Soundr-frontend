@@ -65,12 +65,12 @@ function CreatorDashboardContent() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-2">
+          <h1 className="text-3xl md:text-3xl font-black tracking-tight text-white mb-2">
             Creator Dashboard
           </h1>
           <p className="text-gray-400 font-medium text-sm">Welcome back. Here&apos;s how your tracks are performing.</p>
         </div>
-        <Link href="/creator/upload" className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-indigo-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border border-white/10">
+        <Link href="/creator/upload" className="bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 hover:from-violet-500 hover:via-indigo-500 hover:to-cyan-500 text-white px-8 py-3.5 rounded-full font-bold shadow-[0_0_25px_rgba(99,102,241,0.5)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 border border-white/20">
           <svg className="w-5 h-5 font-bold" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
           Upload New Track
         </Link>
