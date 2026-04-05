@@ -216,6 +216,11 @@ export default function GlobalPlayer() {
         <button onClick={(e) => { e.stopPropagation(); handleAction('hype'); }} disabled={isProcessing} className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold text-white whitespace-nowrap">
           <span className="text-yellow-500">🚀</span> Hype It Up
         </button>
+        <div className="h-px bg-white/10 my-1" />
+        <button onClick={(e) => { e.stopPropagation(); dispatch(stopPlayer()); }} className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-red-500/20 text-red-500 transition-colors text-xs font-bold whitespace-nowrap">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          Close Player
+        </button>
       </div>
       {actionStatus && (
         <div className={`mt-2 p-2 rounded-lg text-[10px] font-black text-center ${actionStatus.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -395,29 +400,23 @@ export default function GlobalPlayer() {
                     <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => dispatch(setVolume(parseFloat(e.target.value)))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" />
                   </div>
                 </div>
-                <div className="relative">
-                  <button 
-                    onClick={() => setShowActions(!showActions)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'text-gray-400 hover:text-white border-white/5 hover:bg-white/10'}`}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowActions(!showActions)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'text-gray-400 hover:text-white border-white/5 hover:bg-white/10'}`}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                    </button>
+                    {showActions && <ActionMenuOverlay />}
+                  </div>
+                  <button
+                    onClick={() => dispatch(toggleMinimize())}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-md border border-white/5"
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                   </button>
-                  {showActions && <ActionMenuOverlay />}
                 </div>
-                <button
-                  onClick={() => dispatch(stopPlayer())}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-white/5"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <button
-                  onClick={() => dispatch(toggleMinimize())}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-md border border-white/5"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                </button>
               </div>
-            </div>
 
             {/* MOBILE LAYOUT (max-md) */}
             <div className="md:hidden flex flex-col w-full gap-4">
@@ -448,9 +447,6 @@ export default function GlobalPlayer() {
                   </div>
                   <button onClick={() => dispatch(toggleMinimize())} className="w-10 h-10 rounded-full bg-white/5 text-gray-400 flex items-center justify-center border border-white/10">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  <button onClick={() => dispatch(stopPlayer())} className="w-10 h-10 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20 active:scale-95 transition-all">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
               </div>
@@ -539,9 +535,6 @@ export default function GlobalPlayer() {
               </button>
               <button onClick={() => dispatch(toggleMinimize())} className="w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 border border-white/5 transition-all">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
-              </button>
-              <button onClick={() => dispatch(stopPlayer())} className="w-9 h-9 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500/20 border border-red-500/10 transition-all">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
           </div>
