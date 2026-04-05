@@ -28,6 +28,7 @@ export default function GlobalPlayer() {
   const { isRehydrated } = useSelector((state) => state.auth);
   
   const [progress, setProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const [currentTime, setCurrentTime] = useState('0:00');
   const [duration, setDuration] = useState('0:00');
   const [isBuffering, setIsBuffering] = useState(false);
@@ -105,7 +106,7 @@ export default function GlobalPlayer() {
   // Progress Tracker
   useEffect(() => {
     let timer;
-    if (howl && isPlaying) {
+    if (howl && isPlaying && !isDragging) {
       timer = setInterval(() => {
         const current = howl.seek();
         const total = howl.duration();
@@ -116,7 +117,7 @@ export default function GlobalPlayer() {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [howl, isPlaying]);
+  }, [howl, isPlaying, isDragging]);
 
   const formatTime = (seconds) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -125,13 +126,23 @@ export default function GlobalPlayer() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleSeek = (e) => {
+  const handleScrub = (e) => {
+    setIsDragging(true);
+    const newProgress = parseFloat(e.target.value);
+    setProgress(newProgress);
+    if (howl) {
+      const newTime = (newProgress / 100) * howl.duration();
+      setCurrentTime(formatTime(newTime));
+    }
+  };
+
+  const handleSeekEnd = (e) => {
     if (howl) {
       const newProgress = parseFloat(e.target.value);
       const newTime = (newProgress / 100) * howl.duration();
       howl.seek(newTime);
-      setProgress(newProgress);
     }
+    setIsDragging(false);
   };
 
   if (!currentTrack || !isRehydrated) return null;
@@ -265,7 +276,16 @@ export default function GlobalPlayer() {
                 </div>
                 <div className="flex items-center gap-3 w-full max-w-lg">
                   <span className="text-[10px] text-gray-500 tabular-nums">{currentTime}</span>
-                  <input type="range" min="0" max="100" value={progress} onChange={handleSeek} className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" />
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={progress} 
+                    onInput={handleScrub} 
+                    onMouseUp={handleSeekEnd}
+                    onTouchEnd={handleSeekEnd}
+                    className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" 
+                  />
                   <span className="text-[10px] text-gray-500 tabular-nums">{duration}</span>
                 </div>
               </div>
@@ -316,7 +336,16 @@ export default function GlobalPlayer() {
                {/* Mobile Progress Bar */}
                <div className="w-full flex items-center gap-2">
                  <span className="text-[10px] text-gray-500 tabular-nums">{currentTime}</span>
-                 <input type="range" min="0" max="100" value={progress} onChange={handleSeek} className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" />
+                 <input 
+                   type="range" 
+                   min="0" 
+                   max="100" 
+                   value={progress} 
+                   onInput={handleScrub} 
+                   onMouseUp={handleSeekEnd}
+                   onTouchEnd={handleSeekEnd}
+                   className="flex-1 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" 
+                 />
                  <span className="text-[10px] text-gray-500 tabular-nums">{duration}</span>
                </div>
 

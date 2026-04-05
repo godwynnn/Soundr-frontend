@@ -106,7 +106,7 @@ function EarningsDashboard() {
 
   const handleProceedToPayment = async () => {
     if (!amount || parseFloat(amount) < 5) {
-      alert("Please enter a valid amount (minimum $5.00)");
+      alert("Please enter a valid amount (minimum ₦5.00)");
       return;
     }
 
@@ -144,6 +144,18 @@ function EarningsDashboard() {
     }
   };
 
+  const incrementAmount = () => {
+    const current = parseFloat(amount || "0");
+    setAmount((current + 1).toString());
+  };
+
+  const decrementAmount = () => {
+    const current = parseFloat(amount || "0");
+    if (current > 0) {
+      setAmount(Math.max(0, current - 1).toString());
+    }
+  };
+
   return (
     <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-10 md:gap-12 mt-16 md:mt-0 animate-[fade-in_0.5s_ease-out]">
       {/* Header */}
@@ -167,7 +179,7 @@ function EarningsDashboard() {
             <div>
               <p className="text-white/70 text-sm font-bold uppercase tracking-widest mb-1">Total Wallet Balance</p>
               <h3 className="text-5xl font-black tracking-tighter">
-                ${walletData ? parseFloat(walletData.balance).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
+                ₦{walletData ? parseFloat(walletData.balance).toLocaleString('en-NG', { minimumFractionDigits: 2 }) : '0.00'}
               </h3>
             </div>
             <div className="flex flex-wrap gap-4 mt-8">
@@ -195,7 +207,7 @@ function EarningsDashboard() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none" />
           <div className="z-10">
             <p className="text-gray-400 text-sm font-medium mb-4">Pending Clearance</p>
-            <h4 className="text-4xl font-black text-white">$420.50</h4>
+            <h4 className="text-4xl font-black text-white">₦420.50</h4>
             <p className="text-xs text-indigo-400 mt-3 flex items-center gap-1 font-medium bg-indigo-400/10 w-fit px-2 py-1.5 rounded-md">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               Available in 3 days
@@ -251,7 +263,7 @@ function EarningsDashboard() {
                           {tx.description || `Via ${tx.payment_method}`}
                         </td>
                         <td className={`px-6 py-4 text-sm font-bold text-right ${tx.transaction_type === 'deposit' ? 'text-emerald-400' : 'text-white'}`}>
-                          {tx.transaction_type === 'deposit' ? '+' : ''}${parseFloat(tx.amount).toFixed(2)}
+                          {tx.transaction_type === 'deposit' ? '+' : ''}₦{parseFloat(tx.amount).toFixed(2)}
                         </td>
                       </tr>
                     ))
@@ -300,7 +312,7 @@ function EarningsDashboard() {
                 <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-center bg-black/20 rounded-2xl p-4 backdrop-blur-md">
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Generated</p>
-                    <p className="text-2xl font-black text-emerald-400">$845.20</p>
+                    <p className="text-2xl font-black text-emerald-400">₦845.20</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Streams</p>
@@ -318,11 +330,11 @@ function EarningsDashboard() {
         <div className="p-6 rounded-3xl bg-[#12141a] border border-white/10 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-2xl -mr-8 -mt-8 rounded-full pointer-events-none" />
           <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
-            <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3v18l12-18v18" /><line x1="4" y1="10" x2="20" y2="10" /><line x1="4" y1="14" x2="20" y2="14" /></svg>
             Life-time Earnings
           </p>
           <div className="flex flex-col mt-4">
-            <span className="text-3xl font-black text-white mb-2">$14,820</span>
+            <span className="text-3xl font-black text-white mb-2">₦14,820</span>
             <span className="text-emerald-400 text-xs font-bold w-fit bg-emerald-400/10 px-2 py-1 rounded-md">↑ 12% vs last yr</span>
           </div>
         </div>
@@ -333,7 +345,7 @@ function EarningsDashboard() {
             Avg. Payout
           </p>
           <div className="flex flex-col mt-4">
-            <span className="text-3xl font-black text-white mb-2">$640.00</span>
+            <span className="text-3xl font-black text-white mb-2">₦640.00</span>
             <span className="text-gray-500 text-xs font-medium w-fit bg-white/5 px-2 py-1 rounded-md">Monthly baseline</span>
           </div>
         </div>
@@ -405,7 +417,7 @@ function EarningsDashboard() {
                   <p className="text-gray-400 font-medium mb-8">Your wallet balance has been updated successfully.</p>
                   <div className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 flex justify-between items-center">
                     <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">Amount Added</span>
-                    <span className="text-2xl font-black text-emerald-400">${parseFloat(amount).toFixed(2)}</span>
+                    <span className="text-2xl font-black text-emerald-400">₦{parseFloat(amount).toFixed(2)}</span>
                   </div>
                   <p className="mt-12 text-xs text-gray-600 animate-pulse">Closing drawer in a few seconds...</p>
                 </div>
@@ -479,18 +491,40 @@ function EarningsDashboard() {
                   <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Amount to Add</label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
-                        <input
-                          type="number"
-                          placeholder="0.00"
-                          value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
-                          className="w-full bg-[#12141a] border border-white/20 rounded-xl px-10 py-4 text-2xl font-black text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-gray-600"
-                          autoFocus
-                        />
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={decrementAmount}
+                          className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all font-bold text-2xl"
+                        >
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M18 12H6" /></svg>
+                        </button>
+
+                        <div className="relative flex-1">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">₦</span>
+                          <input
+                            type="number"
+                            placeholder="0.00"
+                            min="0"
+                            value={amount}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "" || parseFloat(val) >= 0) {
+                                setAmount(val);
+                                }
+                              }}
+                            className="w-full bg-[#12141a] border border-white/20 rounded-xl pl-10 pr-4 py-4 text-2xl font-black text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-gray-600 text-center"
+                            autoFocus
+                          />
+                        </div>
+
+                        <button 
+                          onClick={incrementAmount}
+                          className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all font-bold text-2xl"
+                        >
+                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" /></svg>
+                        </button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Minimum amount is $5.00</p>
+                      <p className="text-xs text-gray-500 mt-1">Minimum amount is ₦5.00</p>
                     </div>
                   </div>
 
