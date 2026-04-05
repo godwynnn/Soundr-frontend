@@ -12,6 +12,8 @@ function EarningsDashboard() {
   const [walletData, setWalletData] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [isFetchingData, setIsFetchingData] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState(null); // 'idle', 'pending', 'success', 'reversed', 'failed'
+  const [activeReference, setActiveReference] = useState(null);
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -41,6 +43,67 @@ function EarningsDashboard() {
     fetchWalletData();
   }, []);
 
+
+  console.log(paymentStatus, activeReference);
+  // Real-time status updates via SSE
+  useEffect(() => {
+    let eventSource;
+    if (activeReference && paymentStatus === 'pending') {
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      // Note: Standard EventSource doesn't support headers.
+      // We pass the reference in the URL. The backend handles security via session or we can add a token param.
+      const url = `${API_URL}/api/payment/stream-status/?reference=${activeReference}&token=${token}`;
+
+      eventSource = new EventSource(url);
+
+      eventSource.onmessage = async (event) => {
+        const statusMsg = event.data;
+
+        if (statusMsg === 'success') {
+          setPaymentStatus('success');
+          eventSource.close();
+
+          // Automatically refresh wallet data
+          try {
+            const refreshResponse = await fetch(`${API_URL}/api/payment/wallet/`, {
+              headers: {
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+              }
+            });
+            if (refreshResponse.ok) {
+              const refreshedData = await refreshResponse.json();
+              setWalletData(refreshedData);
+              setTransactions(refreshedData.transactions || []);
+            }
+          } catch (e) {
+            console.error("Failed to refresh wallet:", e);
+          }
+
+          // Auto-close drawer after delay
+          setTimeout(() => {
+            setIsDrawerOpen(false);
+            setPaymentStatus('idle');
+            setActiveReference(null);
+            setCheckoutUrl(null);
+          }, 4000);
+        } else if (statusMsg === 'failed' || statusMsg === 'reversed') {
+          setPaymentStatus(statusMsg);
+          eventSource.close();
+        }
+      };
+
+      eventSource.onerror = (err) => {
+        console.error("SSE connection error:", err);
+        eventSource.close();
+      };
+    }
+    return () => {
+      if (eventSource) eventSource.close();
+    };
+  }, [activeReference, paymentStatus]);
+
   const handleProceedToPayment = async () => {
     if (!amount || parseFloat(amount) < 5) {
       alert("Please enter a valid amount (minimum $5.00)");
@@ -68,6 +131,8 @@ function EarningsDashboard() {
 
       if (response.ok && data.data?.authorization_url) {
         setCheckoutUrl(data.data.authorization_url);
+        setActiveReference(data.data.reference);
+        setPaymentStatus('pending');
       } else {
         alert(data.error || data.message || "Failed to initialize payment.");
       }
@@ -174,10 +239,10 @@ function EarningsDashboard() {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border capitalize ${tx.transaction_type === 'deposit'
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                              : tx.transaction_type === 'withdrawal'
-                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                                : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : tx.transaction_type === 'withdrawal'
+                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                              : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                             }`}>
                             {tx.transaction_type || 'Unknown'} ({(tx.status || 'pending').toLowerCase()})
                           </span>
@@ -310,6 +375,8 @@ function EarningsDashboard() {
                   </button>
                   <h2 className="text-xl font-bold text-white tracking-tight">{checkoutUrl ? "Complete Payment" : "Enter Amount"}</h2>
                 </div>
+              ) : paymentStatus === 'success' || paymentStatus === 'failed' || paymentStatus === 'reversed' ? (
+                <h2 className="text-xl font-bold text-white tracking-tight animate-[fade_0.2s_ease-out]">Payment Result</h2>
               ) : (
                 <h2 className="text-xl font-bold text-white tracking-tight animate-[fade_0.2s_ease-out]">Select Payment Option</h2>
               )}
@@ -328,9 +395,41 @@ function EarningsDashboard() {
               </button>
             </div>
 
-            <div className={`flex flex-col gap-4 overflow-y-auto flex-1 ${checkoutUrl ? 'p-0 bg-white rounded-b-xl' : 'p-6'}`}>
-              {checkoutUrl ? (
-                <div className="flex-1 w-full h-full animate-[fade_0.4s_ease-out]">
+            <div className={`flex flex-col gap-4 overflow-y-auto flex-1 ${checkoutUrl && paymentStatus === 'pending' ? 'p-0 bg-white rounded-b-xl' : 'p-6'}`}>
+              {paymentStatus === 'success' ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-[fade_0.4s_ease-out]">
+                  <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-[bounce_1s_infinite]">
+                    <svg className="w-12 h-12 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  </div>
+                  <h3 className="text-3xl font-black text-white mb-2 tracking-tight">Payment Successful!</h3>
+                  <p className="text-gray-400 font-medium mb-8">Your wallet balance has been updated successfully.</p>
+                  <div className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 flex justify-between items-center">
+                    <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">Amount Added</span>
+                    <span className="text-2xl font-black text-emerald-400">${parseFloat(amount).toFixed(2)}</span>
+                  </div>
+                  <p className="mt-12 text-xs text-gray-600 animate-pulse">Closing drawer in a few seconds...</p>
+                </div>
+              ) : (paymentStatus === 'failed' || paymentStatus === 'reversed') ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-[fade_0.4s_ease-out]">
+                  <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+                    <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                  </div>
+                  <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Payment {paymentStatus === 'reversed' ? 'Reversed' : 'Failed'}</h3>
+                  <p className="text-gray-400 font-medium mb-8">Something went wrong with your transaction. Please try again or contact support.</p>
+                  <button
+                    onClick={() => {
+                      setPaymentStatus('idle');
+                      setCheckoutUrl(null);
+                      setActiveReference(null);
+                    }}
+                    className="w-full py-4 bg-white/10 border border-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all"
+                  >
+                    Try Another Method
+                  </button>
+                </div>
+              ) : checkoutUrl ? (
+                <div className="flex-1 w-full h-full animate-[fade_0.4s_ease-out] relative">
+                  {/* Centralized processing loader if payment status is pending */}
                   <iframe
                     src={checkoutUrl}
                     className="w-full h-full border-0 min-h-[600px] rounded-b-xl"
