@@ -21,6 +21,10 @@ export default function SongDetail({ params }) {
   const [song, setSong] = useState(null);
   const [hypeCount, setHypeCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [supportStatus, setSupportStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [hypeStatus, setHypeStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [isSupporting, setIsSupporting] = useState(false);
+  const [isHyping, setIsHyping] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -68,6 +72,8 @@ export default function SongDetail({ params }) {
 
   const handleHype = () => requireAuth(async () => {
     try {
+      setIsHyping(true);
+      setHypeStatus(null);
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/songs/${songId}/hype/`, {
         method: 'POST',
         headers: {
@@ -75,12 +81,20 @@ export default function SongDetail({ params }) {
           'Content-Type': 'application/json'
         }
       });
+      const data = await res.json();
       if (res.ok) {
-        const data = await res.json();
         setHypeCount(data.hype_count);
+        setHypeStatus({ type: 'success', message: data.message });
+        // Clear success message after 3 seconds
+        setTimeout(() => setHypeStatus(null), 3000);
+      } else {
+        setHypeStatus({ type: 'error', message: data.error || "Hype failed." });
       }
     } catch (err) {
       console.error("Hype failed:", err);
+      setHypeStatus({ type: 'error', message: "An error occurred." });
+    } finally {
+      setIsHyping(false);
     }
   });
 
@@ -100,6 +114,31 @@ export default function SongDetail({ params }) {
       }
     } catch (err) {
       console.error("Like failed:", err);
+    }
+  });
+
+  const handleSupport = () => requireAuth(async () => {
+    try {
+      setIsSupporting(true);
+      setSupportStatus(null);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment/support-song/${songId}/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSupportStatus({ type: 'success', message: data.message });
+      } else {
+        setSupportStatus({ type: 'error', message: data.error || "Support failed." });
+      }
+    } catch (err) {
+      console.error("Support error:", err);
+      setSupportStatus({ type: 'error', message: "An error occurred." });
+    } finally {
+      setIsSupporting(false);
     }
   });
 
@@ -187,18 +226,32 @@ export default function SongDetail({ params }) {
         </div>
       </section>
 
-      {mounted && isAuthenticated && (
+      {mounted && isAuthenticated && !isOwner && (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 p-6 rounded-2xl flex flex-col gap-3 hover:border-indigo-400/50 transition-colors">
+           <div className={`bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 p-6 rounded-2xl flex flex-col gap-3 hover:border-indigo-400/50 transition-colors relative overflow-hidden ${supportStatus ? 'ring-2 ring-indigo-500/50' : ''}`}>
               <h3 className="font-bold text-lg flex items-center gap-2">
                  <span className="text-pink-500">❤️</span> Support {song.artist}
               </h3>
               <p className="text-sm text-gray-300 leading-relaxed">
-                 100% of proceeds go directly to the artist.
+                 Use 1 Support Point to show your appreciation. 100% of value goes to the artist.
               </p>
-              <button onClick={() => requireAuth(() => {})} className="mt-2 bg-white text-black px-5 py-2.5 rounded-full font-bold hover:scale-[1.02] transition-transform self-start">
-                 Contribute $5
-              </button>
+              
+              {supportStatus ? (
+                <div className={`mt-2 p-3 rounded-xl text-xs font-bold flex items-center gap-2 animate-[fade_0.3s_ease-out] ${supportStatus.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                   {supportStatus.type === 'success' ? '✅' : '❌'} {supportStatus.message}
+                </div>
+              ) : (
+                <button 
+                  onClick={handleSupport} 
+                  disabled={isSupporting}
+                  className="mt-2 bg-white text-black px-5 py-2.5 rounded-full font-bold hover:scale-[1.02] transition-transform self-start disabled:opacity-50 disabled:scale-100 flex items-center gap-2"
+                >
+                   {isSupporting ? (
+                     <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                   ) : null}
+                   Send 1 Support Point
+                </button>
+              )}
            </div>
            
            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl flex flex-col gap-3 items-start relative overflow-hidden group hover:bg-white/10 transition-colors">
@@ -208,13 +261,23 @@ export default function SongDetail({ params }) {
               <p className="text-sm text-gray-300 leading-relaxed">
                  Push this track to the Trending charts!
               </p>
-              <button 
-                onClick={handleHype}
-                className="mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full font-bold transition-colors flex items-center gap-2"
-              >
-                 Hype it Up
-                 <span className="bg-black/50 px-2 py-0.5 rounded text-xs ml-2">{hypeCount}</span>
-              </button>
+              
+              {hypeStatus ? (
+                <div className={`mt-2 p-3 rounded-xl text-[10px] font-bold flex items-center gap-2 animate-[fade_0.3s_ease-out] ${hypeStatus.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                   {hypeStatus.type === 'success' ? '✅' : '❌'} {hypeStatus.message}
+                </div>
+              ) : (
+                <button 
+                  onClick={handleHype}
+                  disabled={isHyping}
+                  className="mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2.5 rounded-full font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                   {isHyping ? (
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                   ) : "Hype it Up"}
+                   <span className="bg-black/50 px-2 py-0.5 rounded text-xs ml-2">{hypeCount}</span>
+                </button>
+              )}
            </div>
         </section>
       )}

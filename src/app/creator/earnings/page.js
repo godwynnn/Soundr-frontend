@@ -5,6 +5,10 @@ import Link from 'next/link';
 
 function EarningsDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+  const [isHypeModalOpen, setIsHypeModalOpen] = useState(false);
+  const [pointsToBuy, setPointsToBuy] = useState('');
+  const [hypePointsToBuy, setHypePointsToBuy] = useState('');
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [amount, setAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +18,20 @@ function EarningsDashboard() {
   const [isFetchingData, setIsFetchingData] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState(null); // 'idle', 'pending', 'success', 'reversed', 'failed'
   const [activeReference, setActiveReference] = useState(null);
+  const [purchaseResult, setPurchaseResult] = useState(null); // { status: 'success' | 'error', message: string }
+
+  const POINT_PRICE = 200; // 1 Support Point = ₦200
+  const HYPE_POINT_PRICE = 100; // 1 Hype Point = ₦100
+  const nairaEquivalent = pointsToBuy ? parseFloat(pointsToBuy) * POINT_PRICE : 0;
+  const hypeNairaEquivalent = hypePointsToBuy ? parseFloat(hypePointsToBuy) * HYPE_POINT_PRICE : 0;
+
+  const closeModals = () => {
+    setIsTopUpModalOpen(false);
+    setIsHypeModalOpen(false);
+    setPurchaseResult(null);
+    setPointsToBuy('');
+    setHypePointsToBuy('');
+  };
 
   useEffect(() => {
     const fetchWalletData = async () => {
@@ -42,6 +60,56 @@ function EarningsDashboard() {
     };
     fetchWalletData();
   }, []);
+
+  const handleConfirmPurchase = async (pointType) => {
+    const points = pointType === 'support' ? pointsToBuy : hypePointsToBuy;
+    const cost = pointType === 'support' ? nairaEquivalent : hypeNairaEquivalent;
+
+    if (!points || parseFloat(points) <= 0) {
+      setPurchaseResult({ status: 'error', message: "Please enter a valid amount of points." });
+      return;
+    }
+
+    if (cost < 1000) {
+      setPurchaseResult({ status: 'error', message: "Minimum purchase amount is ₦1,000.00." });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${API_URL}/api/payment/purchase-points/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          points: parseInt(points),
+          point_type: pointType
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setWalletData(result.wallet);
+        if (result.wallet.transactions) {
+          setTransactions(result.wallet.transactions);
+        }
+        setPurchaseResult({ status: 'success', message: result.message });
+      } else {
+        setPurchaseResult({ status: 'error', message: result.error || "Purchase failed. Please try again." });
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
+      setPurchaseResult({ status: 'error', message: "An error occurred during the purchase." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   console.log(paymentStatus, activeReference);
@@ -203,20 +271,28 @@ function EarningsDashboard() {
           <div className="absolute -right-12 -top-12 w-64 h-64 bg-white/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
           <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-indigo-400/30 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700"></div>
         </div>
-        <div className="bg-[#12141a] rounded-3xl p-6 border border-white/10 flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-[#12141a] rounded-3xl p-6 border border-white/10 flex flex-col justify-center gap-4 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none" />
-          <div className="z-10">
-            <p className="text-gray-400 text-sm font-medium mb-4">Pending Clearance</p>
-            <h4 className="text-4xl font-black text-white">₦420.50</h4>
-            <p className="text-xs text-indigo-400 mt-3 flex items-center gap-1 font-medium bg-indigo-400/10 w-fit px-2 py-1.5 rounded-md">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              Available in 3 days
-            </p>
-          </div>
-          <div className="mt-6 pt-6 border-t border-white/10 z-10">
-            <p className="text-gray-500 text-sm font-medium mb-1">Next Payout Date</p>
-            <p className="text-xl font-black text-white">Oct 15, 2026</p>
-          </div>
+          
+          <button 
+            onClick={() => setIsTopUpModalOpen(true)}
+            className="z-10 w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-700 hover:from-indigo-500 hover:to-violet-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98] flex items-center justify-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            </div>
+            Top up support
+          </button>
+
+          <button 
+            onClick={() => setIsHypeModalOpen(true)}
+            className="z-10 w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold rounded-2xl transition-all shadow-sm active:scale-[0.98] flex items-center justify-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            Buy hype point
+          </button>
         </div>
       </div>
 
@@ -291,32 +367,54 @@ function EarningsDashboard() {
           </div>
         </div>
 
-        {/* Top Performing Track */}
-        <div className="flex flex-col h-full">
+        {/* Points Display */}
+        <div className="flex flex-col gap-6 h-full pb-8 lg:pb-0">
           <div className="flex justify-between items-end mb-6">
             <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span className="text-yellow-500">🏆</span> Top Track
+              <span className="text-indigo-500">💎</span> Your Points
             </h2>
           </div>
-          <div className="bg-[#12141a] rounded-3xl border border-white/10 flex flex-col overflow-hidden h-full">
-            <div className="flex-1 flex flex-col relative group">
-              {/* Background art */}
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-40 group-hover:opacity-50 transition-all group-hover:scale-105 duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#12141a] via-[#12141a]/80 to-[#12141a]/20" />
-
-              <div className="relative z-10 p-6 md:p-8 flex flex-col h-full justify-end">
-                <span className="text-xs font-bold tracking-widest uppercase text-emerald-400 mb-3 border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 rounded-full w-fit">Top Earner</span>
-                <h3 className="text-3xl font-black text-white drop-shadow-md tracking-tight">Midnight Echoes</h3>
-                <p className="text-gray-300 font-medium text-sm mt-1">Synthwave Collection</p>
-
-                <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-center bg-black/20 rounded-2xl p-4 backdrop-blur-md">
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Generated</p>
-                    <p className="text-2xl font-black text-emerald-400">₦845.20</p>
+          
+          <div className="flex flex-col gap-6 flex-1">
+            {/* Support Points Card */}
+            <div className="bg-[#12141a] rounded-[2rem] border border-white/10 p-8 flex-1 relative overflow-hidden group hover:border-indigo-500/30 transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-6 border border-indigo-500/20 group-hover:scale-110 transition-transform">
+                    <svg className="w-7 h-7 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Streams</p>
-                    <p className="text-xl font-bold text-white">124.5K</p>
+                  <h3 className="text-gray-400 text-xs font-black uppercase tracking-[0.2em] mb-2">Support Points</h3>
+                  <p className="text-5xl font-black text-white tracking-tighter">
+                    {walletData?.support_points?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="mt-8 pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Active Balance</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Hype Points Card */}
+            <div className="bg-[#12141a] rounded-[2rem] border border-white/10 p-8 flex-1 relative overflow-hidden group hover:border-yellow-500/30 transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-yellow-500/10 flex items-center justify-center mb-6 border border-yellow-500/20 group-hover:scale-110 transition-transform">
+                    <svg className="w-7 h-7 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                  </div>
+                  <h3 className="text-gray-400 text-xs font-black uppercase tracking-[0.2em] mb-2">Hype Points</h3>
+                  <p className="text-5xl font-black text-white tracking-tighter">
+                    {walletData?.hype_points?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="mt-8 pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                    <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Hype Power</p>
                   </div>
                 </div>
               </div>
@@ -563,7 +661,210 @@ function EarningsDashboard() {
         </div>
       )}
 
+      {/* Top Up Support Modal */}
+      {isTopUpModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-md animate-[fade_0.3s_ease-out_forwards]"
+            onClick={closeModals}
+          ></div>
+          
+          {/* Modal Panel */}
+          <div className="relative w-full max-w-md bg-[#12141a] rounded-[2.5rem] border border-white/10 p-8 shadow-2xl animate-[zoomIn_0.3s_ease-out_forwards] overflow-hidden">
+            <div className={`absolute top-0 right-0 w-32 h-32 ${purchaseResult?.status === 'success' ? 'bg-emerald-500/10' : purchaseResult?.status === 'error' ? 'bg-red-500/10' : 'bg-indigo-500/10'} blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none`} />
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-white tracking-tight">Top Up Support</h2>
+                  <p className="text-gray-400 text-sm font-medium mt-1">Acquire points to support creators.</p>
+                </div>
+                <button 
+                  onClick={closeModals}
+                  className="p-2 rounded-full bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              {purchaseResult ? (
+                <div className="flex flex-col items-center py-6 text-center animate-[fade_0.3s_ease-out]">
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${purchaseResult.status === 'success' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                    {purchaseResult.status === 'success' ? (
+                      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-black text-white mb-2 tracking-tight">{purchaseResult.status === 'success' ? "Success!" : "Purchase Failed"}</h3>
+                  <p className="text-gray-400 font-medium mb-10 leading-relaxed max-w-[260px]">{purchaseResult.message}</p>
+                  <button 
+                    onClick={closeModals}
+                    className="w-full py-5 bg-white text-[#12141a] font-black rounded-2xl hover:bg-white/90 transition-all shadow-xl active:scale-95"
+                  >
+                    Got it
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {/* Points Input */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Points to buy</label>
+                    <div className="relative group">
+                      <input 
+                        type="number"
+                        placeholder="Enter points count"
+                        value={pointsToBuy}
+                        onChange={(e) => setPointsToBuy(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-indigo-500 transition-all text-xl"
+                        autoFocus
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400 font-bold text-sm bg-indigo-400/10 px-2 py-1 rounded-md">POINTS</div>
+                    </div>
+                  </div>
+
+                  {/* Naira Equivalent (Disabled) */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Naira Equivalent</label>
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        disabled
+                        value={`₦${nairaEquivalent.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`}
+                        className="w-full bg-white/[0.02] border border-white/5 rounded-2xl px-12 py-4 text-gray-400 font-black text-xl cursor-not-allowed"
+                      />
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 text-xl font-bold">₦</span>
+                    </div>
+                    <p className="text-[10px] text-gray-600 font-medium ml-1 italic">
+                      Current rate: 1 Support Point = ₦200.00. (Min purchase: ₦1,000.00)
+                    </p>
+                  </div>
+
+                  <button 
+                    className="w-full py-5 bg-white text-indigo-900 font-black rounded-2xl hover:bg-slate-100 transition-all shadow-xl active:scale-95 mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
+                    onClick={() => handleConfirmPurchase('support')}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Confirm Purchase"}
+                    {!isLoading && <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hype Point Modal */}
+      {isHypeModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-md animate-[fade_0.3s_ease-out_forwards]"
+            onClick={closeModals}
+          ></div>
+          
+          {/* Modal Panel */}
+          <div className="relative w-full max-w-md bg-[#12141a] rounded-[2.5rem] border border-white/10 p-8 shadow-2xl animate-[zoomIn_0.3s_ease-out_forwards] overflow-hidden">
+            <div className={`absolute top-0 right-0 w-32 h-32 ${purchaseResult?.status === 'success' ? 'bg-emerald-500/10' : purchaseResult?.status === 'error' ? 'bg-red-500/10' : 'bg-yellow-500/10'} blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none`} />
+            
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                    <span className="text-yellow-500">⚡</span> Buy Hype Points
+                  </h2>
+                  <p className="text-gray-400 text-sm font-medium mt-1">Boost visibility and hype for your tracks.</p>
+                </div>
+                <button 
+                  onClick={closeModals}
+                  className="p-2 rounded-full bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              {purchaseResult ? (
+                <div className="flex flex-col items-center py-6 text-center animate-[fade_0.3s_ease-out]">
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${purchaseResult.status === 'success' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                    {purchaseResult.status === 'success' ? (
+                      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-black text-white mb-2 tracking-tight">{purchaseResult.status === 'success' ? "Success!" : "Purchase Failed"}</h3>
+                  <p className="text-gray-400 font-medium mb-10 leading-relaxed max-w-[260px]">{purchaseResult.message}</p>
+                  <button 
+                    onClick={closeModals}
+                    className="w-full py-5 bg-white text-[#12141a] font-black rounded-2xl hover:bg-white/90 transition-all shadow-xl active:scale-95"
+                  >
+                    Got it
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-6">
+                  {/* Points Input */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Hype points to buy</label>
+                    <div className="relative group">
+                      <input 
+                        type="number"
+                        placeholder="Enter points count"
+                        value={hypePointsToBuy}
+                        onChange={(e) => setHypePointsToBuy(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-yellow-500 transition-all text-xl"
+                        autoFocus
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-yellow-500 font-bold text-sm bg-yellow-500/10 px-2 py-1 rounded-md">HYPE</div>
+                    </div>
+                  </div>
+
+                  {/* Naira Equivalent (Disabled) */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Naira Equivalent</label>
+                    <div className="relative">
+                      <input 
+                        type="text"
+                        disabled
+                        value={`₦${hypeNairaEquivalent.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`}
+                        className="w-full bg-white/[0.02] border border-white/5 rounded-2xl px-12 py-4 text-gray-400 font-black text-xl cursor-not-allowed"
+                      />
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 text-xl font-bold">₦</span>
+                    </div>
+                    <p className="text-[10px] text-gray-600 font-medium ml-1 italic">
+                      Current rate: 1 Hype Point = ₦100.00. (Min purchase: ₦1,000.00)
+                    </p>
+                  </div>
+
+                  <button 
+                    className="w-full py-5 bg-yellow-500 text-black font-black rounded-2xl hover:bg-yellow-400 transition-all shadow-xl shadow-yellow-500/10 active:scale-95 mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
+                    onClick={() => handleConfirmPurchase('hype')}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Buy Hype"}
+                    {!isLoading && <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Animation Styles */}
       <style jsx global>{`
+        @keyframes zoomIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
         @keyframes slideIn {
           from {
             transform: translateX(100%);
