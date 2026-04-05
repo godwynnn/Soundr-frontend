@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Howl } from 'howler';
 import {
   togglePlay,
@@ -26,7 +26,12 @@ export default function GlobalPlayer() {
     isShuffled,
     isMinimized
   } = useSelector((state) => state.player);
-  const { isRehydrated } = useSelector((state) => state.auth);
+  const {
+    isAuthenticated,
+    user,
+    accessToken,
+    isRehydrated
+  } = useSelector((state) => state.auth);
 
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -35,6 +40,9 @@ export default function GlobalPlayer() {
   const [isBuffering, setIsBuffering] = useState(false);
   const howlRef = useRef(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const [actionStatus, setActionStatus] = useState(null); // { type: 'success'|'error', message: string }
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
@@ -159,6 +167,64 @@ export default function GlobalPlayer() {
     setIsDragging(false);
   };
 
+  const handleAction = async (actionType) => {
+    if (!isAuthenticated) {
+      setActionStatus({ type: 'error', message: "Please Login" });
+      return;
+    }
+
+    setIsProcessing(true);
+    setActionStatus(null);
+    let endpoint = "";
+    if (actionType === 'like') endpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/listener/songs/${currentTrack.id}/like/`;
+    else if (actionType === 'support') endpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/payment/support-song/${currentTrack.id}/`;
+    else if (actionType === 'hype') endpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/listener/songs/${currentTrack.id}/hype/`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setActionStatus({ type: 'success', message: actionType==='like' ? (data.liked ? "Liked!" : "Removed") : (actionType==='support' ? "Supported!" : "Hyped!") });
+        setTimeout(() => setActionStatus(null), 2000);
+      } else {
+        setActionStatus({ type: 'error', message: data.error || "Failed" });
+      }
+    } catch (err) {
+      setActionStatus({ type: 'error', message: "Error" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const router = useRouter();
+
+  const ActionMenuOverlay = () => (
+    <div className="absolute bottom-full right-0 mb-4 w-48 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-2xl animate-in slide-in-from-bottom-2 duration-300 z-50">
+      <div className="flex flex-col gap-1">
+        <button onClick={(e) => { e.stopPropagation(); handleAction('like'); }} disabled={isProcessing} className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold text-white whitespace-nowrap">
+          <span className="text-pink-500">❤️</span> Like Track
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); handleAction('support'); }} disabled={isProcessing} className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold text-white whitespace-nowrap">
+          <span className="text-emerald-500">🪙</span> Send Support
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); handleAction('hype'); }} disabled={isProcessing} className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold text-white whitespace-nowrap">
+          <span className="text-yellow-500">🚀</span> Hype It Up
+        </button>
+      </div>
+      {actionStatus && (
+        <div className={`mt-2 p-2 rounded-lg text-[10px] font-black text-center ${actionStatus.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+          {actionStatus.message}
+        </div>
+      )}
+    </div>
+  );
+
   if (!currentTrack || !isRehydrated) return null;
 
   const LoadingOverlay = () => (
@@ -218,7 +284,12 @@ export default function GlobalPlayer() {
               <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
             </div>
             <div className="min-w-0">
-              <h4 className="text-white font-bold text-xs truncate leading-none">{currentTrack.title}</h4>
+              <h4 
+                onClick={() => router.push(`/song/${currentTrack.id}`)}
+                className="text-white font-bold text-xs truncate leading-none cursor-pointer hover:text-indigo-400 transition-colors"
+              >
+                {currentTrack.title}
+              </h4>
               <p className="text-[10px] text-gray-400 truncate mt-1">{currentTrack.artist}</p>
             </div>
           </div>
@@ -256,7 +327,7 @@ export default function GlobalPlayer() {
 
   return (
     <div className={`${containerStyles} ${widthClass}`}>
-      <div className={`relative bg-black/70 backdrop-blur-3xl border border-white/10 rounded-[1.5rem] md:rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 ${isMinimized ? 'py-3 px-4 md:px-6' : 'py-4 px-8 flex items-center gap-8'}`}>
+      <div className={`relative bg-black/70 backdrop-blur-3xl border border-white/10 rounded-[1.5rem] md:rounded-2xl shadow-2xl transition-all duration-500 ${isMinimized ? 'py-3 px-4 md:px-6' : 'py-4 px-8 flex items-center gap-8'}`}>
 
         {/* Progress Tracker Line */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/5">
@@ -274,7 +345,12 @@ export default function GlobalPlayer() {
                   <img src={currentTrack.cover_image_url} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-white font-bold text-sm truncate">{currentTrack.title}</h4>
+                  <h4 
+                    onClick={() => router.push(`/song/${currentTrack.id}`)}
+                    className="text-white font-bold text-sm truncate cursor-pointer hover:text-indigo-400 transition-colors"
+                  >
+                    {currentTrack.title}
+                  </h4>
                   <p className="text-gray-400 text-xs truncate">{currentTrack.artist}</p>
                 </div>
               </div>
@@ -319,6 +395,15 @@ export default function GlobalPlayer() {
                     <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => dispatch(setVolume(parseFloat(e.target.value)))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" />
                   </div>
                 </div>
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowActions(!showActions)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'text-gray-400 hover:text-white border-white/5 hover:bg-white/10'}`}
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                  </button>
+                  {showActions && <ActionMenuOverlay />}
+                </div>
                 <button
                   onClick={() => dispatch(stopPlayer())}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-white/5"
@@ -353,8 +438,14 @@ export default function GlobalPlayer() {
                     {isPlaying ? <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> : <svg className="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
                   </button>
                   <button onClick={() => setShowOptions(!showOptions)} className={`w-10 h-10 rounded-full flex items-center justify-center border border-white/10 transition-colors ${showOptions ? 'bg-indigo-500 text-white' : 'bg-white/5 text-gray-400'}`}>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" /></svg>
                   </button>
+                  <div className="relative">
+                    <button onClick={() => setShowActions(!showActions)} className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'bg-white/5 text-gray-400 border-white/10 overflow-hidden'}`}>
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                    </button>
+                    {showActions && <ActionMenuOverlay />}
+                  </div>
                   <button onClick={() => dispatch(toggleMinimize())} className="w-10 h-10 rounded-full bg-white/5 text-gray-400 flex items-center justify-center border border-white/10">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                   </button>
@@ -411,6 +502,7 @@ export default function GlobalPlayer() {
                 </div>
               )}
             </div>
+
           </>
         )}
 
@@ -423,12 +515,25 @@ export default function GlobalPlayer() {
                 <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="text-white font-bold text-xs md:text-sm truncate leading-tight tracking-tight">{currentTrack.title}</h4>
+                <h4 
+                  onClick={() => router.push(`/song/${currentTrack.id}`)}
+                  className="text-white font-bold text-xs md:text-sm truncate leading-tight tracking-tight cursor-pointer hover:text-indigo-400 transition-colors"
+                >
+                  {currentTrack.title}
+                </h4>
                 <p className="text-[10px] md:text-xs text-gray-400 truncate mt-0.5">{currentTrack.artist}</p>
               </div>
             </div>
-
             <div className="flex items-center gap-1.5 shrink-0 ml-auto leading-none">
+              <div className="relative">
+                <button 
+                  onClick={() => setShowActions(!showActions)}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'bg-white/10 text-gray-400 border-white/5 hover:bg-white/20'}`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
+                </button>
+                {showActions && <ActionMenuOverlay />}
+              </div>
               <button onClick={() => dispatch(togglePlay())} className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform">
                 {isPlaying ? <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg> : <svg className="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>}
               </button>
