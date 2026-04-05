@@ -28,9 +28,13 @@ const playerSlice = createSlice({
   },
   reducers: {
     setTrack: (state, action) => {
+      if (!action.payload) return;
       state.currentTrack = action.payload;
       state.isPlaying = true;
-      if (!state.history.find(t => t.id === action.payload.id)) {
+      
+      // Defensive check for duplicates in history
+      const exists = state.history.some(t => t.id === action.payload.id);
+      if (!exists) {
         state.history = [action.payload, ...state.history.slice(0, 9)];
       }
     },

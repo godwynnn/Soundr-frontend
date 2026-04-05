@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useRouter, useParams } from "next/navigation";
+import { setTrack, togglePlay } from "@/store/playerSlice";
 
 export default function PodcastDetailPage() {
   const router = useRouter();
   const params = useParams();
   const podcastId = params.id;
+  const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
+  const { currentTrack, isPlaying: globalIsPlaying } = useSelector((state) => state.player);
 
   const [podcast, setPodcast] = useState(null);
   const [comments, setComments] = useState([]);
@@ -16,9 +19,10 @@ export default function PodcastDetailPage() {
   const [error, setError] = useState("");
   const [newComment, setNewComment] = useState("");
   const [isLiking, setIsLiking] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const audioRef = useRef(null);
+
+  // We'll use Redux state for these now to keep in sync with GlobalPlayer
+  const isThisPodcastActive = currentTrack?.id === podcast?.id;
+  const isPlaying = isThisPodcastActive && globalIsPlaying;
 
   useEffect(() => {
     const fetchPodcast = async () => {
@@ -41,22 +45,11 @@ export default function PodcastDetailPage() {
   }, [podcastId]);
 
   const handleTogglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
+    if (!podcast) return;
+    if (isThisPodcastActive) {
+      dispatch(togglePlay());
     } else {
-      audioRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const current = audioRef.current.currentTime;
-      const duration = audioRef.current.duration;
-      if (duration) {
-        setProgress((current / duration) * 100);
-      }
+      dispatch(setTrack(podcast));
     }
   };
 
@@ -161,12 +154,10 @@ export default function PodcastDetailPage() {
 
             <div className="flex flex-col gap-4">
               {/* Playback Progress */}
-              <div className="w-full group/progress cursor-pointer">
+              <div className="w-full group/progress cursor-not-allowed opacity-50">
                 <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden relative">
-                  <div
-                    className="absolute inset-y-0 left-0 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.8)] transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                  />
+                  {/* Progress is now handled by the GlobalPlayer bar below */}
+                  <div className="absolute inset-y-0 left-0 bg-gray-500 w-0" />
                 </div>
               </div>
 
@@ -204,12 +195,6 @@ export default function PodcastDetailPage() {
           </div>
         </div>
 
-        <audio
-          ref={audioRef}
-          src={podcast.audio_file_url}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={() => setIsPlaying(false)}
-        />
       </div>
 
       {/* Content & Social Wrapper */}
