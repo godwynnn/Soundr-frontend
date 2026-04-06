@@ -134,6 +134,8 @@ export default function SongDetail({ params }) {
       if (res.ok) {
         setSupportStatus({ type: 'success', message: data.message });
         setShowHeartBurst(Date.now()); // Trigger animation
+        // Clear success message after 3 seconds to keep UI clean for next clicks
+        setTimeout(() => setSupportStatus(null), 3000);
       } else {
         setSupportStatus({ type: 'error', message: data.error || "Support failed." });
       }
@@ -231,7 +233,7 @@ export default function SongDetail({ params }) {
 
       {mounted && isAuthenticated && !isOwner && (
         <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className={`bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 p-6 rounded-2xl flex flex-col gap-3 hover:border-indigo-400/50 transition-colors relative ${supportStatus ? 'ring-2 ring-indigo-500/50' : ''}`}>
+          <div className={`bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 p-6 rounded-2xl flex flex-col gap-3 hover:border-indigo-400/50 transition-colors relative`}>
             <h3 className="font-bold text-lg flex items-center gap-2">
               <span className="text-pink-500">❤️</span> Support {song.artist}
             </h3>
@@ -239,24 +241,30 @@ export default function SongDetail({ params }) {
               Use 1 Support Point to show your appreciation. 100% of value goes to the artist.
             </p>
 
-            {supportStatus ? (
-              <div className={`mt-2 p-3 rounded-xl text-xs font-bold flex items-center gap-2 animate-[fade_0.3s_ease-out] ${supportStatus.type === 'success' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
-                {supportStatus.type === 'success' ? '✅' : '❌'} {supportStatus.message}
-              </div>
-            ) : (
+            <div className="mt-2 flex flex-col gap-3">
               <button
                 onClick={handleSupport}
                 disabled={isSupporting}
-                className="mt-2 bg-white text-black px-5 py-2.5 rounded-full font-bold hover:scale-[1.02] transition-transform self-start disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 relative"
+                className="bg-white text-black px-6 py-2.5 rounded-full font-bold hover:scale-[1.02] active:scale-95 transition-all self-start disabled:opacity-50 disabled:scale-100 flex items-center justify-center gap-2 relative shadow-lg shadow-white/5"
               >
                 {isSupporting ? (
                   <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
                 ) : null}
                 Send 1 Support Point
               </button>
-            )}
 
-            {/* Floating Hearts Container - Moved outside conditional to stay mounted */}
+              {supportStatus && (
+                <div 
+                  className={`p-2.5 rounded-xl text-[10px] font-bold flex items-center gap-2 animate-[fade_0.3s_ease-out] w-fit ${
+                    supportStatus.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  }`}
+                >
+                  {supportStatus.type === 'success' ? '✅' : '❌'} {supportStatus.message}
+                </div>
+              )}
+            </div>
+
+            {/* Floating Hearts Container */}
             <div className="absolute left-1/2 bottom-12 -translate-x-1/2 pointer-events-none">
               <HeartBurst trigger={showHeartBurst} />
             </div>
