@@ -19,6 +19,8 @@ function EarningsDashboard() {
   const [paymentStatus, setPaymentStatus] = useState(null); // 'idle', 'pending', 'success', 'reversed', 'failed'
   const [activeReference, setActiveReference] = useState(null);
   const [purchaseResult, setPurchaseResult] = useState(null); // { status: 'success' | 'error', message: string }
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const POINT_PRICE = 200; // 1 Support Point = ₦200
   const HYPE_POINT_PRICE = 100; // 1 Hype Point = ₦100
@@ -223,6 +225,20 @@ function EarningsDashboard() {
       setAmount(Math.max(0, current - 1).toString());
     }
   };
+  
+  // Pagination logic
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, transactions.length);
+  const currentTransactions = transactions.slice(startIndex, endIndex);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  };
 
   return (
     <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-10 md:gap-12 mt-16 md:mt-0 animate-[fade-in_0.5s_ease-out]">
@@ -319,8 +335,8 @@ function EarningsDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {transactions.length > 0 ? (
-                    transactions.map((tx) => (
+                  {currentTransactions.length > 0 ? (
+                    currentTransactions.map((tx) => (
                       <tr key={tx.id} className="hover:bg-white/5 transition-colors group">
                         <td className="px-6 py-4 text-sm font-medium text-gray-300">
                           {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -354,12 +370,20 @@ function EarningsDashboard() {
               </table>
             </div>
             <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between mt-auto bg-white/[0.01]">
-              <p className="text-xs text-gray-500 font-medium">Showing {transactions.length} transactions</p>
+              <p className="text-xs text-gray-500 font-medium">Showing {transactions.length > 0 ? startIndex + 1 : 0}-{endIndex} of {transactions.length} transactions</p>
               <div className="flex gap-2">
-                <button className="p-1.5 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-colors">
+                <button 
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className={`p-1.5 rounded-lg border border-white/10 transition-colors ${currentPage === 1 ? 'opacity-20 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
+                >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <button className="p-1.5 rounded-lg border border-white/10 text-white hover:bg-white/10 transition-colors bg-white/5">
+                <button 
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  className={`p-1.5 rounded-lg border border-white/10 transition-colors ${currentPage === totalPages || totalPages === 0 ? 'opacity-20 cursor-not-allowed' : 'text-white hover:bg-white/10 bg-white/5'}`}
+                >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </button>
               </div>
