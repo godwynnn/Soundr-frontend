@@ -276,10 +276,10 @@ function EarningsDashboard() {
 
   const handleDownloadReceipt = async (tx) => {
     if (!tx || typeof window === 'undefined') return;
-    
+
     // Dynamic import to avoid SSR issues if this page is rendered on the server
     const html2pdf = (await import('html2pdf.js')).default;
-    
+
     // Target the specific container for capture
     const element = document.getElementById(`receipt-modal-content`);
     if (!element) {
@@ -288,22 +288,22 @@ function EarningsDashboard() {
     }
 
     const opt = {
-      margin:       0,
-      filename:     `receipt-${tx.id.toString().slice(-8)}.pdf`,
-      image:        { type: 'jpeg', quality: 1.0 },
-      html2canvas:  { 
-        scale: 2, 
-        useCORS: true, 
+      margin: 0,
+      filename: `receipt-${tx.id.toString().slice(-8)}.pdf`,
+      image: { type: 'jpeg', quality: 1.0 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
         backgroundColor: '#12141a', // Ensure background is solid for the capture
         logging: false
       },
-      jsPDF:        { unit: 'px', format: [400, 600], orientation: 'portrait', hotfixes: ['px_scaling'] }
+      jsPDF: { unit: 'px', format: [400, 600], orientation: 'portrait', hotfixes: ['px_scaling'] }
     };
 
     // Use html2pdf to generate and save the PDF
     html2pdf().set(opt).from(element).save();
   };
-  
+
   // Pagination logic
   const totalPages = Math.ceil(transactions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -323,7 +323,7 @@ function EarningsDashboard() {
       {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
         <div>
-          <h1 className="text-3xl md:text-3xl font-black tracking-tight text-white mb-2">Wallet & Earnings</h1>
+          <h1 className="text-3xl md:text-3xl font-black tracking-tight text-white mb-2">Wallet </h1>
           <p className="text-gray-400 font-medium text-sm">Manage your revenue, tracking, and payouts.</p>
         </div>
         <div className="flex items-center gap-4">
@@ -367,8 +367,8 @@ function EarningsDashboard() {
         </div>
         <div className="bg-[#12141a] rounded-3xl p-6 border border-white/10 flex flex-col justify-center gap-4 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none" />
-          
-          <button 
+
+          <button
             onClick={() => setIsTopUpModalOpen(true)}
             className="z-10 w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-700 hover:from-indigo-500 hover:to-violet-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98] flex items-center justify-center gap-3"
           >
@@ -378,7 +378,7 @@ function EarningsDashboard() {
             Top up support
           </button>
 
-          <button 
+          <button
             onClick={() => setIsHypeModalOpen(true)}
             className="z-10 w-full py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold rounded-2xl transition-all shadow-sm active:scale-[0.98] flex items-center justify-center gap-3"
           >
@@ -415,8 +415,8 @@ function EarningsDashboard() {
                 <tbody className="divide-y divide-white/5">
                   {currentTransactions.length > 0 ? (
                     currentTransactions.map((tx) => (
-                      <tr 
-                        key={tx.id} 
+                      <tr
+                        key={tx.id}
                         className="hover:bg-white/5 transition-colors group cursor-pointer"
                         onClick={() => {
                           setSelectedTransaction(tx);
@@ -457,14 +457,14 @@ function EarningsDashboard() {
             <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between mt-auto bg-white/[0.01]">
               <p className="text-xs text-gray-500 font-medium">Showing {transactions.length > 0 ? startIndex + 1 : 0}-{endIndex} of {transactions.length} transactions</p>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={handlePrevPage}
                   disabled={currentPage === 1}
                   className={`p-1.5 rounded-lg border border-white/10 transition-colors ${currentPage === 1 ? 'opacity-20 cursor-not-allowed' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                 </button>
-                <button 
+                <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages || totalPages === 0}
                   className={`p-1.5 rounded-lg border border-white/10 transition-colors ${currentPage === totalPages || totalPages === 0 ? 'opacity-20 cursor-not-allowed' : 'text-white hover:bg-white/10 bg-white/5'}`}
@@ -483,7 +483,7 @@ function EarningsDashboard() {
               <span className="text-indigo-500">💎</span> Your Points
             </h2>
           </div>
-          
+
           <div className="flex flex-col gap-6 flex-1">
             {/* Support Points Card */}
             <div className="bg-[#12141a] rounded-[2rem] border border-white/10 p-8 flex-1 relative overflow-hidden group hover:border-indigo-500/30 transition-all">
@@ -494,7 +494,7 @@ function EarningsDashboard() {
                     <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:scale-110 transition-transform">
                       <svg className="w-7 h-7 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setIsConvertModalOpen(true)}
                       className="p-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all active:scale-95 flex items-center gap-2 group/btn"
                       title="Convert Points to Naira"
@@ -709,7 +709,7 @@ function EarningsDashboard() {
                     <div className="flex flex-col gap-2">
                       <label className="text-sm font-bold text-gray-400 uppercase tracking-widest">Amount to Add</label>
                       <div className="flex items-center gap-3">
-                        <button 
+                        <button
                           onClick={decrementAmount}
                           className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all font-bold text-2xl"
                         >
@@ -727,14 +727,14 @@ function EarningsDashboard() {
                               const val = e.target.value;
                               if (val === "" || parseFloat(val) >= 0) {
                                 setAmount(val);
-                                }
-                              }}
+                              }
+                            }}
                             className="w-full bg-[#12141a] border border-white/20 rounded-xl pl-10 pr-4 py-4 text-2xl font-black text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-gray-600 text-center"
                             autoFocus
                           />
                         </div>
 
-                        <button 
+                        <button
                           onClick={incrementAmount}
                           className="w-14 h-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all font-bold text-2xl"
                         >
@@ -788,18 +788,18 @@ function EarningsDashboard() {
             className="absolute inset-0 bg-black/80 backdrop-blur-md animate-[fade_0.3s_ease-out_forwards]"
             onClick={closeModals}
           ></div>
-          
+
           {/* Modal Panel */}
           <div className="relative w-full max-w-md bg-[#12141a] rounded-[2.5rem] border border-white/10 p-8 shadow-2xl animate-[zoomIn_0.3s_ease-out_forwards] overflow-hidden">
             <div className={`absolute top-0 right-0 w-32 h-32 ${purchaseResult?.status === 'success' ? 'bg-emerald-500/10' : purchaseResult?.status === 'error' ? 'bg-red-500/10' : 'bg-indigo-500/10'} blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none`} />
-            
+
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-8">
                 <div>
                   <h2 className="text-2xl font-black text-white tracking-tight">Top Up Support</h2>
                   <p className="text-gray-400 text-sm font-medium mt-1">Acquire points to support creators.</p>
                 </div>
-                <button 
+                <button
                   onClick={closeModals}
                   className="p-2 rounded-full bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
                 >
@@ -818,7 +818,7 @@ function EarningsDashboard() {
                   </div>
                   <h3 className="text-2xl font-black text-white mb-2 tracking-tight">{purchaseResult.status === 'success' ? "Success!" : "Purchase Failed"}</h3>
                   <p className="text-gray-400 font-medium mb-10 leading-relaxed max-w-[260px]">{purchaseResult.message}</p>
-                  <button 
+                  <button
                     onClick={closeModals}
                     className="w-full py-5 bg-white text-[#12141a] font-black rounded-2xl hover:bg-white/90 transition-all shadow-xl active:scale-95"
                   >
@@ -831,7 +831,7 @@ function EarningsDashboard() {
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Points to buy</label>
                     <div className="relative group">
-                      <input 
+                      <input
                         type="number"
                         placeholder="Enter points count"
                         value={pointsToBuy}
@@ -847,7 +847,7 @@ function EarningsDashboard() {
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Naira Equivalent</label>
                     <div className="relative">
-                      <input 
+                      <input
                         type="text"
                         disabled
                         value={`₦${nairaEquivalent.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`}
@@ -860,7 +860,7 @@ function EarningsDashboard() {
                     </p>
                   </div>
 
-                  <button 
+                  <button
                     className="w-full py-5 bg-white text-indigo-900 font-black rounded-2xl hover:bg-slate-100 transition-all shadow-xl active:scale-95 mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
                     onClick={() => handleConfirmPurchase('support')}
                     disabled={isLoading}
@@ -879,15 +879,15 @@ function EarningsDashboard() {
       {isHypeModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           {/* Overlay */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/80 backdrop-blur-md animate-[fade_0.3s_ease-out_forwards]"
             onClick={closeModals}
           ></div>
-          
+
           {/* Modal Panel */}
           <div className="relative w-full max-w-md bg-[#12141a] rounded-[2.5rem] border border-white/10 p-8 shadow-2xl animate-[zoomIn_0.3s_ease-out_forwards] overflow-hidden">
             <div className={`absolute top-0 right-0 w-32 h-32 ${purchaseResult?.status === 'success' ? 'bg-emerald-500/10' : purchaseResult?.status === 'error' ? 'bg-red-500/10' : 'bg-yellow-500/10'} blur-3xl -mr-10 -mt-10 rounded-full pointer-events-none`} />
-            
+
             <div className="relative z-10">
               <div className="flex justify-between items-center mb-8">
                 <div>
@@ -896,7 +896,7 @@ function EarningsDashboard() {
                   </h2>
                   <p className="text-gray-400 text-sm font-medium mt-1">Boost visibility and hype for your tracks.</p>
                 </div>
-                <button 
+                <button
                   onClick={closeModals}
                   className="p-2 rounded-full bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 transition-colors"
                 >
@@ -915,7 +915,7 @@ function EarningsDashboard() {
                   </div>
                   <h3 className="text-2xl font-black text-white mb-2 tracking-tight">{purchaseResult.status === 'success' ? "Success!" : "Purchase Failed"}</h3>
                   <p className="text-gray-400 font-medium mb-10 leading-relaxed max-w-[260px]">{purchaseResult.message}</p>
-                  <button 
+                  <button
                     onClick={closeModals}
                     className="w-full py-5 bg-white text-[#12141a] font-black rounded-2xl hover:bg-white/90 transition-all shadow-xl active:scale-95"
                   >
@@ -928,7 +928,7 @@ function EarningsDashboard() {
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Hype points to buy</label>
                     <div className="relative group">
-                      <input 
+                      <input
                         type="number"
                         placeholder="Enter points count"
                         value={hypePointsToBuy}
@@ -944,7 +944,7 @@ function EarningsDashboard() {
                   <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Naira Equivalent</label>
                     <div className="relative">
-                      <input 
+                      <input
                         type="text"
                         disabled
                         value={`₦${hypeNairaEquivalent.toLocaleString('en-NG', { minimumFractionDigits: 2 })}`}
@@ -957,7 +957,7 @@ function EarningsDashboard() {
                     </p>
                   </div>
 
-                  <button 
+                  <button
                     className="w-full py-5 bg-yellow-500 text-black font-black rounded-2xl hover:bg-yellow-400 transition-all shadow-xl shadow-yellow-500/10 active:scale-95 mt-4 flex items-center justify-center gap-2 disabled:opacity-50"
                     onClick={() => handleConfirmPurchase('hype')}
                     disabled={isLoading}
@@ -980,21 +980,21 @@ function EarningsDashboard() {
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
             onClick={() => setIsTransactionDetailModalOpen(false)}
           ></div>
-          
-          <div 
+
+          <div
             id="receipt-modal-content"
             className="relative w-full max-w-md rounded-[2.5rem] border shadow-2xl animate-[zoomIn_0.3s_ease-out_forwards] overflow-hidden"
-            style={{ 
-              background: 'linear-gradient(180deg, #12141a 0%, #0e0f11 100%)', 
+            style={{
+              background: 'linear-gradient(180deg, #12141a 0%, #0e0f11 100%)',
               borderColor: 'rgba(255, 255, 255, 0.12)',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
             }}
           >
-            <div 
-              className="absolute top-0 right-0 w-64 h-64 blur-[80px] -mr-24 -mt-24 rounded-full pointer-events-none opacity-40" 
+            <div
+              className="absolute top-0 right-0 w-64 h-64 blur-[80px] -mr-24 -mt-24 rounded-full pointer-events-none opacity-40"
               style={{ background: selectedTransaction.transaction_type === 'deposit' ? 'radial-gradient(circle, #10b981 0%, transparent 70%)' : 'radial-gradient(circle, #6366f1 0%, transparent 70%)' }}
             />
-            
+
             <div className="relative z-10 p-8">
               <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
@@ -1004,7 +1004,7 @@ function EarningsDashboard() {
                     <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#6b7280' }}>ID: {selectedTransaction.id.toString().slice(-8)}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsTransactionDetailModalOpen(false)}
                   className="p-2 rounded-full transition-colors"
                   style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: '#6b7280' }}
@@ -1016,10 +1016,10 @@ function EarningsDashboard() {
               <div className="flex flex-col items-center mb-10">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] mb-2" style={{ color: '#9ca3af' }}>{selectedTransaction.transaction_type} Amount</p>
                 <h3 className="text-5xl font-black tracking-tighter" style={{ color: selectedTransaction.transaction_type === 'deposit' ? '#10b981' : '#ffffff' }}>
-                   ₦{parseFloat(selectedTransaction.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                  ₦{parseFloat(selectedTransaction.amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                 </h3>
-                <div className="mt-4 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border" style={{ 
-                  backgroundColor: selectedTransaction.status === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
+                <div className="mt-4 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border" style={{
+                  backgroundColor: selectedTransaction.status === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                   color: selectedTransaction.status === 'success' ? '#10b981' : '#f59e0b',
                   borderColor: selectedTransaction.status === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'
                 }}>
@@ -1045,7 +1045,7 @@ function EarningsDashboard() {
               </div>
 
               <div className="mt-10" data-html2canvas-ignore="true">
-                <button 
+                <button
                   onClick={() => handleDownloadReceipt(selectedTransaction)}
                   className="w-full py-4 font-black rounded-2xl transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
                   style={{ backgroundColor: '#ffffff', color: '#12141a' }}
@@ -1068,12 +1068,12 @@ function EarningsDashboard() {
           ></div>
           <div className="relative w-full max-w-md bg-[#12141a] rounded-[2.5rem] border border-white/10 shadow-2xl animate-[zoomIn_0.3s_ease-out_forwards] overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 blur-3xl -mr-16 -mt-16 rounded-full pointer-events-none" />
-            
+
             <div className="relative z-10 p-8">
               <div className="flex justify-between items-center mb-10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                     <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                    <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
                   </div>
                   <h2 className="text-xl font-black text-white tracking-tight">Convert Points</h2>
                 </div>
@@ -1114,7 +1114,7 @@ function EarningsDashboard() {
                           className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-2xl font-black text-white placeholder:text-gray-700 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.08] transition-all"
                         />
                         <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                           <span className="text-xs font-black text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded-md">POINTS</span>
+                          <span className="text-xs font-black text-indigo-400 bg-indigo-400/10 px-2 py-1 rounded-md">POINTS</span>
                         </div>
                       </div>
                     </div>
@@ -1142,7 +1142,7 @@ function EarningsDashboard() {
                         <>Confirm Conversion</>
                       )}
                     </button>
-                    
+
                     <p className="text-[10px] text-center text-gray-500 font-bold uppercase tracking-widest">
                       1 point = ₦200.00
                     </p>

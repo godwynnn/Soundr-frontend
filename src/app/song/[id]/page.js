@@ -26,6 +26,8 @@ export default function SongDetail({ params }) {
   const [hypeStatus, setHypeStatus] = useState(null); // { type: 'success'|'error', message: string }
   const [isSupporting, setIsSupporting] = useState(false);
   const [isHyping, setIsHyping] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(0);
 
   useEffect(() => {
@@ -48,6 +50,7 @@ export default function SongDetail({ params }) {
         setHypeCount(data.hype_count || 0);
         setLiked(data.is_liked || false);
         setLikesCount(data.likes_count || 0);
+        setIsFollowing(data.is_following_artist || false);
         setIsLoading(false);
       })
       .catch(err => {
@@ -147,6 +150,27 @@ export default function SongDetail({ params }) {
     }
   });
 
+  const handleFollow = () => requireAuth(async () => {
+    try {
+      setIsFollowLoading(true);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/artists/${song.uploaded_by}/follow/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsFollowing(data.followed);
+      }
+    } catch (err) {
+      console.error("Follow failed:", err);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  });
+
   if (isLoading || !song) {
     return (
       <div className="w-full h-[60vh] flex flex-col items-center justify-center text-center gap-4">
@@ -199,10 +223,36 @@ export default function SongDetail({ params }) {
           <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
             {song.title}
           </h1>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
-            <Link href="#" className="font-bold border-b border-transparent hover:border-white transition-colors">{song.artist}</Link>
-            <span className="text-gray-400">• {song.genre}</span>
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
+              <Link href="#" className="font-bold border-b border-transparent hover:border-white transition-colors">{song.artist}</Link>
+            </div>
+            {!isOwner && (
+              <button 
+                onClick={handleFollow}
+                disabled={isFollowLoading}
+                className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border transition-all active:scale-95 flex items-center gap-2 ${
+                  isFollowing 
+                  ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' 
+                  : 'bg-white text-black border-white hover:bg-gray-200'
+                }`}
+              >
+                {isFollowLoading ? (
+                  <div className={`w-3 h-3 border-2 rounded-full animate-spin ${isFollowing ? 'border-white/20 border-t-white' : 'border-black/20 border-t-black'}`}></div>
+                ) : (
+                  <>
+                    {isFollowing ? (
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M5 13l4 4L19 7" /></svg>
+                    ) : (
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M12 4v16m8-8H4" /></svg>
+                    )}
+                    {isFollowing ? "Following" : "Follow"}
+                  </>
+                )}
+              </button>
+            )}
+            <span className="text-gray-400 text-sm font-medium ml-1">• {song.genre}</span>
           </div>
 
           <div className="flex items-center gap-4 mt-6 w-full justify-center md:justify-start">

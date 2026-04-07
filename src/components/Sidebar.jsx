@@ -90,10 +90,10 @@ export default function Sidebar() {
 
         <div className="mb-8 px-2 flex flex-col gap-6">
           <div className="flex justify-center md:justify-start">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">S</div>
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Soundr</span>
-            </div>
+          <Link href={isCreator ? "/creator" : "/"} onClick={() => setIsOpen(false)} className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">S</div>
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Soundr</span>
+          </Link>
           </div>
 
           {isAuthenticated && (
@@ -108,7 +108,15 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex flex-col w-full gap-2">
-          <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-4 px-3 py-2.5 text-white bg-white/10 rounded-lg transition-colors font-medium hover:text-white">
+          <Link 
+            href={isCreator ? "/creator" : "/"} 
+            onClick={() => setIsOpen(false)} 
+            className={`flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors font-medium ${
+              (isCreator && pathname === '/creator') || (!isCreator && pathname === '/') 
+              ? 'text-white bg-white/10' 
+              : 'text-gray-400 hover:text-white'
+            }`}
+          >
             <svg className="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
             <span className="text-base">Home</span>
           </Link>
@@ -193,9 +201,14 @@ export default function Sidebar() {
           {accountMenuOpen && (
             <div className="absolute bottom-full left-0 w-full mb-3 bg-[#13151a] border border-white/10 rounded-xl shadow-2xl overflow-hidden flex flex-col p-1.5 z-50">
               {isAuthenticated ? (
-                <button onClick={handleLogout} className="text-left px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 rounded-lg transition-colors font-semibold">
-                  Log out
-                </button>
+                <>
+                  <Link href="/profile" onClick={() => setAccountMenuOpen(false)} className="px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-medium">
+                    Profile
+                  </Link>
+                  <button onClick={handleLogout} className="text-left px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 rounded-lg transition-colors font-semibold border-t border-white/5">
+                    Log out
+                  </button>
+                </>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setAccountMenuOpen(false)} className="px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors font-medium">Log in</Link>
