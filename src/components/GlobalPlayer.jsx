@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Howl } from 'howler';
 import {
   togglePlay,
@@ -190,7 +191,7 @@ export default function GlobalPlayer() {
       });
       const data = await res.json();
       if (res.ok) {
-        setActionStatus({ type: 'success', message: actionType==='like' ? (data.liked ? "Liked!" : "Removed") : (actionType==='support' ? "Supported!" : "Hyped!") });
+        setActionStatus({ type: 'success', message: actionType === 'like' ? (data.liked ? "Liked!" : "Removed") : (actionType === 'support' ? "Supported!" : "Hyped!") });
         setTimeout(() => setActionStatus(null), 2000);
       } else {
         setActionStatus({ type: 'error', message: data.error || "Failed" });
@@ -289,13 +290,18 @@ export default function GlobalPlayer() {
               <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
             </div>
             <div className="min-w-0">
-              <h4 
+              <h4
                 onClick={() => router.push(`/song/${currentTrack.id}`)}
                 className="text-white font-bold text-xs truncate leading-none cursor-pointer hover:text-indigo-400 transition-colors"
               >
                 {currentTrack.title}
               </h4>
-              <p className="text-[10px] text-gray-400 truncate mt-1">{currentTrack.artist}</p>
+              <Link
+                href={`/profile/${currentTrack.uploaded_by}`}
+                className="text-[10px] text-gray-400 truncate mt-1 hover:text-white transition-colors cursor-pointer"
+              >
+                {currentTrack.artist}
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -350,13 +356,18 @@ export default function GlobalPlayer() {
                   <img src={currentTrack.cover_image_url} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <h4 
+                  <h4
                     onClick={() => router.push(`/song/${currentTrack.id}`)}
                     className="text-white font-bold text-sm truncate cursor-pointer hover:text-indigo-400 transition-colors"
                   >
                     {currentTrack.title}
                   </h4>
-                  <p className="text-gray-400 text-xs truncate">{currentTrack.artist}</p>
+                  <Link
+                    href={`/profile/${currentTrack.uploaded_by}`}
+                    className="text-gray-400 text-xs truncate hover:text-white transition-colors cursor-pointer"
+                  >
+                    {currentTrack.artist}
+                  </Link>
                 </div>
               </div>
 
@@ -400,23 +411,23 @@ export default function GlobalPlayer() {
                     <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => dispatch(setVolume(parseFloat(e.target.value)))} className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white" />
                   </div>
                 </div>
-                  <div className="relative">
-                    <button 
-                      onClick={() => setShowActions(!showActions)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'text-gray-400 hover:text-white border-white/5 hover:bg-white/10'}`}
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-                    </button>
-                    {showActions && <ActionMenuOverlay />}
-                  </div>
+                <div className="relative">
                   <button
-                    onClick={() => dispatch(toggleMinimize())}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-md border border-white/5"
+                    onClick={() => setShowActions(!showActions)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'text-gray-400 hover:text-white border-white/5 hover:bg-white/10'}`}
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
                   </button>
+                  {showActions && <ActionMenuOverlay />}
                 </div>
+                <button
+                  onClick={() => dispatch(toggleMinimize())}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all shadow-md border border-white/5"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
               </div>
+            </div>
 
             {/* MOBILE LAYOUT (max-md) */}
             <div className="md:hidden flex flex-col w-full gap-4">
@@ -428,7 +439,12 @@ export default function GlobalPlayer() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="text-white font-black text-sm truncate tracking-tight">{currentTrack.title}</h4>
-                    <p className="text-xs text-gray-400 truncate">{currentTrack.artist}</p>
+                    <Link
+                      href={`/profile/${currentTrack.uploaded_by}`}
+                      className="text-xs text-gray-400 truncate hover:text-white transition-colors cursor-pointer"
+                    >
+                      {currentTrack.artist}
+                    </Link>
                   </div>
                 </div>
 
@@ -511,18 +527,23 @@ export default function GlobalPlayer() {
                 <img src={currentTrack.cover_image_url} className="w-full h-full object-cover" alt="" />
               </div>
               <div className="min-w-0 flex-1">
-                <h4 
+                <h4
                   onClick={() => router.push(`/song/${currentTrack.id}`)}
                   className="text-white font-bold text-xs md:text-sm truncate leading-tight tracking-tight cursor-pointer hover:text-indigo-400 transition-colors"
                 >
                   {currentTrack.title}
                 </h4>
-                <p className="text-[10px] md:text-xs text-gray-400 truncate mt-0.5">{currentTrack.artist}</p>
+                <Link
+                  href={`/profile/${currentTrack.uploaded_by}`}
+                  className="text-[10px] md:text-xs text-gray-400 truncate mt-0.5 hover:text-white transition-colors cursor-pointer"
+                >
+                  {currentTrack.artist}
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0 ml-auto leading-none">
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setShowActions(!showActions)}
                   className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all ${showActions ? 'bg-indigo-500 border-indigo-400 text-white' : 'bg-white/10 text-gray-400 border-white/5 hover:bg-white/20'}`}
                 >

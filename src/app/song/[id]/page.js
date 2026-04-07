@@ -226,7 +226,7 @@ export default function SongDetail({ params }) {
           <div className="flex flex-wrap items-center gap-3 mt-2">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500" />
-              <Link href="#" className="font-bold border-b border-transparent hover:border-white transition-colors">{song.artist}</Link>
+              <Link href={`/profile/${song.uploaded_by}`} className="font-bold border-b border-transparent hover:border-white transition-colors">{song.artist}</Link>
             </div>
             {!isOwner && (
               <button 

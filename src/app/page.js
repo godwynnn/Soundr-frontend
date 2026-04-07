@@ -109,9 +109,12 @@ export default function Home() {
                     {t.title}
                   </span>
                   <span className="text-gray-500 text-xs">—</span>
-                  <span className="text-gray-400 font-medium text-xs md:text-sm uppercase tracking-wider">
+                  <Link 
+                    href={`/profile/${t.uploaded_by}`}
+                    className="text-gray-400 font-medium text-xs md:text-sm uppercase tracking-wider hover:text-white transition-colors"
+                  >
                     {t.artist}
-                  </span>
+                  </Link>
                   <span className="text-white/10 text-xl font-thin mx-2">/</span>
                 </div>
               ))}
@@ -164,7 +167,7 @@ export default function Home() {
                     {slide.title}
                   </h1>
                   <p className="text-sm md:text-lg lg:text-xl text-white/90 font-medium max-w-xl mb-6 md:mb-8 leading-snug drop-shadow-sm">
-                    Posted By {slide.artist}. Available exclusively on Soundr.
+                    Posted By <Link href={`/profile/${slide.uploaded_by}`} className="border-b border-white/30 hover:border-white transition-colors">{slide.artist}</Link>. Available exclusively on Soundr.
                   </p>
 
                   <div className="flex items-center gap-3 md:gap-4">
@@ -265,7 +268,12 @@ export default function Home() {
                     >
                       {track.title}
                     </span>
-                    <span className="text-xs md:text-sm text-gray-400 font-medium truncate">{track.artist}</span>
+                    <Link 
+                      href={`/profile/${track.uploaded_by}`}
+                      className="text-xs md:text-sm text-gray-400 font-medium truncate hover:text-white transition-colors"
+                    >
+                      {track.artist}
+                    </Link>
                   </div>
                 </div>
               </SwiperSlide>
@@ -335,7 +343,12 @@ export default function Home() {
                     >
                       {track.title}
                     </span>
-                    <span className="text-xs md:text-sm text-gray-400 font-medium truncate">Posted by: {track.artist}</span>
+                    <Link 
+                      href={`/profile/${track.uploaded_by}`}
+                      className="text-xs md:text-sm text-gray-400 font-medium truncate hover:text-white transition-colors"
+                    >
+                      Posted by: {track.artist}
+                    </Link>
                   </div>
                 </div>
               </SwiperSlide>
