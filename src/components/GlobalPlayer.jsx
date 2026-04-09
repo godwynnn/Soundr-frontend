@@ -340,7 +340,7 @@ export default function GlobalPlayer() {
 
   // STABILIZED TRANSITION WRAPPERS
   const containerBase = "fixed bottom-0 left-0 right-0 z-[100] flex justify-center pointer-events-none transition-all duration-500 ease-in-out";
-  const cardBase = "relative bg-black/70 backdrop-blur-3xl border-white/10 shadow-2xl transition-all duration-500 ease-in-out pointer-events-auto overflow-hidden";
+  const cardBase = "relative bg-black/70 backdrop-blur-3xl border-white/10 shadow-2xl transition-all duration-500 ease-in-out pointer-events-auto";
   
   const cardStyles = isMinimized 
     ? "w-[92%] md:w-[60%] lg:w-[45%] mb-6 rounded-2xl py-3 px-4 md:px-6 border max-h-[80px]" 
