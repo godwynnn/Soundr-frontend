@@ -73,6 +73,9 @@ const playerSlice = createSlice({
     toggleMinimize: (state) => {
       state.isMinimized = !state.isMinimized;
     },
+    setMinimized: (state, action) => {
+      state.isMinimized = action.payload;
+    },
     nextTrack: (state) => {
       const activeQueue = state.isShuffled ? state.shuffleQueue : state.queue;
       if (activeQueue.length === 0) return;
@@ -120,6 +123,7 @@ export const {
   toggleRepeat, 
   toggleShuffle, 
   toggleMinimize, 
+  setMinimized,
   nextTrack, 
   prevTrack, 
   stopPlayer 
