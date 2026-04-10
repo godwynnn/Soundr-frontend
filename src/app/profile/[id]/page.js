@@ -46,7 +46,7 @@ export default function ProfileIdPage() {
         } else {
           // Fetch Public Profile Data
           const headers = token ? { Authorization: `Bearer ${token}` } : {};
-          const publicRes = await fetch(`${API_URL}/api/auth/profile/${profileId}/`, { headers });
+          const publicRes = await fetch(`${API_URL}/api/auth/profile/${profileId}`, { headers });
           if (publicRes.ok) {
             const pData = await publicRes.json();
             setProfileUser(pData);
@@ -132,7 +132,7 @@ export default function ProfileIdPage() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-[100px] -mr-32 -mt-32 rounded-full pointer-events-none" />
 
             {/* Avatar */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] bg-gradient-to-tr from-gray-800 to-gray-900 border-2 border-white/10 flex items-center justify-center text-5xl md:text-6xl font-black text-white shadow-2xl group-hover:scale-105 transition-transform duration-500 overflow-hidden">
+            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-tr from-gray-800 to-gray-900 border border-white/10 flex items-center justify-center text-4xl md:text-5xl font-black text-white shadow-2xl group-hover:scale-105 transition-transform duration-500 overflow-hidden shrink-0">
               {profileUser?.avatar_url ? (
                 <img src={profileUser.avatar_url} alt={profileUser.username} className="w-full h-full object-cover" />
               ) : (
@@ -142,10 +142,10 @@ export default function ProfileIdPage() {
             </div>
 
             {/* Basic Info */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2 flex-1">
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-2">
-                <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter">{profileUser?.display_name || profileUser?.username}</h1>
-                <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2 flex-1 w-full min-w-0">
+              <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-3 w-full">
+                <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter truncate leading-tight">{profileUser?.display_name || profileUser?.username}</h1>
+                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-indigo-400 whitespace-nowrap">
                   {profileUser?.is_creator ? "Verified Creator" : "Pro Listener"}
                 </span>
               </div>
@@ -153,16 +153,16 @@ export default function ProfileIdPage() {
                 {profileUser?.bio || (isOwner ? profileUser?.email : "No bio provided.")}
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-4">
+              <div className="mt-4 flex flex-wrap gap-4">
                 {isOwner ? (
                   <>
                     <button
                       onClick={() => setIsEditModalOpen(true)}
-                      className="px-8 py-3 bg-white text-black font-black rounded-2xl hover:bg-gray-200 active:scale-95 transition-all shadow-xl shadow-white/5"
+                      className="px-6 py-2.5 bg-white text-black text-sm font-black rounded-xl hover:bg-gray-200 active:scale-95 transition-all shadow-xl"
                     >
                       Edit Profile
                     </button>
-                    <Link href="/library" className="px-8 py-3 bg-white/5 border border-white/10 text-white font-black rounded-2xl hover:bg-white/10 active:scale-95 transition-all">
+                    <Link href="/library" className="px-6 py-2.5 bg-white/5 border border-white/10 text-white text-sm font-black rounded-xl hover:bg-white/10 active:scale-95 transition-all">
                       View Library
                     </Link>
                   </>
@@ -170,7 +170,7 @@ export default function ProfileIdPage() {
                   <button
                     onClick={handleFollow}
                     disabled={isFollowLoading}
-                    className={`px-12 py-3 rounded-2xl font-black active:scale-95 transition-all shadow-xl flex items-center gap-2 ${isFollowing
+                    className={`px-8 py-2.5 rounded-xl font-black text-sm active:scale-95 transition-all shadow-xl flex items-center gap-2 ${isFollowing
                         ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20 shadow-white/5'
                         : 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-500/20'
                       }`}
@@ -180,7 +180,7 @@ export default function ProfileIdPage() {
                     ) : (
                       <>
                         {isFollowing && (
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
                         )}
                         {isFollowing ? "Following" : "Follow"}
                       </>

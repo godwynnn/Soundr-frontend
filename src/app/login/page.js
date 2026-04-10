@@ -30,12 +30,12 @@ export default function LoginPage() {
         dispatch(loginSuccess({
           access: data.access,
           refresh: data.refresh,
-          user: { email: formData.email, username: formData.email.split('@')[0], id: 1 }
+          user: data.user
         }));
         router.push('/');
       } else {
         const err = await response.json();
-        setError(err.detail || 'Invalid credentials.');
+        setError(err.error || 'Invalid credentials.');
       }
     } catch (err) {
       // Backend unreachable — demo mode: simulate login
