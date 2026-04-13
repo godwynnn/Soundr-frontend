@@ -26,7 +26,8 @@ export default function GlobalPlayer() {
     volume,
     repeatMode,
     isShuffled,
-    isMinimized
+    isMinimized,
+    isStreaming
   } = useSelector((state) => state.player);
   const {
     isAuthenticated,
@@ -255,7 +256,7 @@ export default function GlobalPlayer() {
     </div>
   );
 
-  if (!currentTrack || !isRehydrated) return null;
+  if (!currentTrack || !isRehydrated || isStreaming) return null;
 
   const LoadingOverlay = () => (
     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] z-10 animate-in fade-in duration-300">

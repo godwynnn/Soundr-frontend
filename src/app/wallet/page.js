@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Link from 'next/link';
 
-function EarningsDashboard() {
+function WalletDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [isHypeModalOpen, setIsHypeModalOpen] = useState(false);
@@ -1187,10 +1187,10 @@ function EarningsDashboard() {
   );
 }
 
-export default function EarningsPage() {
+export default function WalletPage() {
   return (
     <AuthGuard>
-      <EarningsDashboard />
+      <WalletDashboard />
     </AuthGuard>
   );
 }

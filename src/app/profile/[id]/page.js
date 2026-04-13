@@ -258,13 +258,13 @@ export default function ProfileIdPage() {
             {/* Quick Actions (ONLY FOR OWNER) */}
             {isOwner && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Link href="/creator/earnings" className="p-8 rounded-[2rem] bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 transition-all group flex flex-col justify-between h-48">
+                <Link href="/wallet" className="p-8 rounded-[2rem] bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 transition-all group flex flex-col justify-between h-48">
                   <div>
-                    <h4 className="text-xl font-black text-white mb-2">Earnings Dashboard</h4>
+                    <h4 className="text-xl font-black text-white mb-2">Wallet Dashboard</h4>
                     <p className="text-xs text-gray-400 font-medium">Manage your payouts and points conversion.</p>
                   </div>
                   <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
-                    Go to Earnings <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    Go to Wallet <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                   </div>
                 </Link>
               </div>

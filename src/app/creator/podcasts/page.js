@@ -1,60 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from 'next/navigation';
 import AuthGuard from "@/components/AuthGuard";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { LiveKitRoom, RoomAudioRenderer, ControlBar, VideoTrack, useLocalParticipant } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
+import { setStreaming } from "@/store/playerSlice";
 
 // Self-view rendered inside <LiveKitRoom> context — defined outside to prevent hook remounts
-function SelfView({ isCameraOn, onToggleCamera }) {
+function SelfView({ isCameraOn, onToggleCamera, isFullScreen = false }) {
   const { localParticipant } = useLocalParticipant();
-  const cameraPub = localParticipant?.getTrackPublication(Track.Source.Camera);
+
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      {cameraPub?.track ? (
-        <VideoTrack
-          key={localParticipant?.sid}
-          trackRef={{ participant: localParticipant, source: Track.Source.Camera, publication: cameraPub }}
-          className="w-full h-full object-cover"
-        />
+    <div className={`relative group overflow-hidden w-full h-full md:aspect-video md:rounded-3xl md:border md:border-white/10 md:shadow-2xl md:bg-black/40`}>
+      {isCameraOn ? (
+        <VideoTrack trackRef={{ participant: localParticipant, source: Track.Source.Camera }} className="w-full h-full object-cover" />
       ) : (
-        <div className="flex flex-col items-center gap-3 text-gray-600">
-          <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-          <p className="text-sm font-medium">Camera is off — click the button to enable</p>
+        <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900">
+          <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+            <svg className="w-10 h-10 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+          </div>
+          <p className="text-zinc-500 font-bold text-sm">Camera is Off</p>
         </div>
       )}
-      {/* Camera toggle button overlaid on preview */}
-      <button
-        onClick={onToggleCamera}
-        className={`absolute bottom-3 right-3 p-2.5 rounded-full border transition-all ${isCameraOn
-            ? 'bg-white text-black border-white hover:bg-white/80'
-            : 'bg-black/60 text-white border-white/20 hover:bg-black/80 backdrop-blur-md'
-          }`}
-        title={isCameraOn ? 'Turn off camera' : 'Turn on camera'}
-      >
-        {isCameraOn ? (
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-        ) : (
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round" strokeWidth="2" />
-          </svg>
-        )}
-      </button>
+
+      {/* Show overlay toggle button on Desktop only (Mobile has dedicated bar) */}
+      <div className="hidden md:absolute md:inset-0 md:bg-black/40 md:opacity-0 md:group-hover:opacity-100 md:transition-opacity md:flex md:items-center md:justify-center">
+        <button
+          onClick={onToggleCamera}
+          className="px-6 py-2 bg-white text-black rounded-full font-bold text-sm hover:scale-105 transition-transform"
+        >
+          {isCameraOn ? 'Turn Off Camera' : 'Turn On Camera'}
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function CreatorPodcastsPage() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' or 'live'
@@ -78,6 +66,26 @@ export default function CreatorPodcastsPage() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [activeRoomName, setActiveRoomName] = useState("");
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [streamDuration, setStreamDuration] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (isLive) {
+      interval = setInterval(() => {
+        setStreamDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      setStreamDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLive]);
+
+  const formatDuration = (seconds) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs > 0 ? hrs.toString().padStart(2, '0') + ':' : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
 
   const handleInputChange = (e) => {
@@ -172,6 +180,7 @@ export default function CreatorPodcastsPage() {
     setServerUrl("");
     setIsCameraOn(false);
     setActiveRoomName("");
+    dispatch(setStreaming(false));
   };
 
   const toggleLiveStream = async () => {
@@ -209,6 +218,7 @@ export default function CreatorPodcastsPage() {
 
           setIsLive(true);
           setLiveListeners(1);
+          dispatch(setStreaming(true));
         } else {
           alert("Failed to connect to LiveKit server. Ensure your backend has valid credentials.");
         }
@@ -223,7 +233,8 @@ export default function CreatorPodcastsPage() {
 
   return (
     <AuthGuard>
-      <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 md:gap-10 mt-12 md:mt-0 pb-12">
+      <>
+        <div className="max-w-[1200px] mx-auto w-full flex flex-col gap-8 md:gap-10 mt-12 md:mt-0 pb-12">
 
         {/* Header */}
         <div className="mb-2 md:mb-6">
@@ -413,45 +424,195 @@ export default function CreatorPodcastsPage() {
                       : "Start a live audio session. Your followers will receive a notification to join in real-time."}
                   </p>
 
-                  {isLive && liveToken ? (
-                    <LiveKitRoom
-                      token={liveToken}
-                      serverUrl={serverUrl}
-                      connect={true}
-                      audio={true}
-                      video={isCameraOn}
-                      onDisconnected={endStream}
+                  {(isLive || isConnecting) ? (
+                    <div 
+                      className={`fixed md:relative inset-0 md:inset-auto z-[200] md:z-0 w-full md:w-auto transition-all duration-700 ease-in-out ${
+                        isCameraOn || isConnecting
+                          ? 'bg-black' 
+                          : 'bg-black/60 backdrop-blur-xl flex items-center justify-center p-4'
+                      }`}
+                      style={{ height: typeof window !== 'undefined' && window.innerWidth < 768 ? '100dvh' : 'auto' }}
                     >
-                      <div className="flex flex-col gap-4">
-                        {/* Self-view / camera preview */}
-                        <div className="w-full aspect-video bg-black border border-white/10 rounded-xl overflow-hidden relative">
-                          <SelfView isCameraOn={isCameraOn} onToggleCamera={() => setIsCameraOn(prev => !prev)} />
-                        </div>
-
-                        <div className="bg-black/50 border border-white/5 rounded-xl p-4 flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-300">Current Listeners</span>
-                          <span className="text-xl font-bold text-white flex items-center gap-2">
-                            <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            {liveListeners}
-                          </span>
-                        </div>
-
-                        <div className="bg-[#13151a] p-4 rounded-xl border border-white/5 mx-auto">
-                          <ControlBar variation="minimal" />
-                        </div>
-                        <RoomAudioRenderer />
-
-                        {/* Mock Chat Box */}
-                        <div className="bg-black/30 border border-white/5 rounded-xl h-48 flex flex-col pt-3 px-3">
-                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2 px-1">Live Chat</span>
-                          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col justify-end gap-2 pb-2">
-                            <div className="text-xs text-gray-400 px-2 italic text-center mb-2">Chat started</div>
-                            <div className="text-sm px-2 py-1"><span className="font-bold text-[#a855f7] mr-2">MusicLover99:</span> Sounds amazing! 🔥</div>
-                            <div className="text-sm px-2 py-1"><span className="font-bold text-pink-400 mr-2">VibeCheck:</span> Can you play the new track?</div>
+                      {/* Session Content Container */}
+                      <div className={`w-full h-full flex flex-col transition-all duration-700 ${
+                        (!isCameraOn && !isConnecting) && 'md:h-full max-w-lg max-h-[85vh] md:max-h-none md:max-w-none'
+                      }`}>
+                        
+                        {isConnecting && !liveToken ? (
+                          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-500">
+                            <div className="relative mb-8">
+                              <div className="size-24 rounded-full border-4 border-red-500/20" />
+                              <div className="size-24 rounded-full border-4 border-red-500 border-t-transparent absolute top-0 left-0 animate-spin" />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-2xl animate-pulse">📡</span>
+                              </div>
+                            </div>
+                            <h3 className="text-2xl font-black text-white mb-3 tracking-tight">Going Live...</h3>
+                            <p className="text-gray-400 text-sm max-w-[240px] leading-relaxed mb-10">
+                              Initializing secure broadcast channel and synchronizing with your audience.
+                            </p>
+                            <button 
+                              onClick={() => {
+                                setIsConnecting(false);
+                                setIsLive(false);
+                              }}
+                              className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-sm font-bold text-white transition-all active:scale-95"
+                            >
+                              Cancel Setup
+                            </button>
                           </div>
-                        </div>
+                        ) : liveToken ? (
+                          <LiveKitRoom
+                            token={liveToken}
+                            serverUrl={serverUrl}
+                            connect={true}
+                            audio={true}
+                            video={isCameraOn}
+                            onDisconnected={endStream}
+                            className="h-full w-full flex-1"
+                            style={{ height: '100%' }}
+                          >
+                            {/* FEED LAYER: Immersive background (Camera ON) or Centered Card (Camera OFF) */}
+                            <div className={`absolute md:relative inset-0 md:inset-auto z-0 transition-all duration-700 overflow-hidden ${
+                              isCameraOn 
+                                ? 'h-full w-full' 
+                                : 'relative md:h-auto h-[40vh] rounded-3xl md:mb-6 shadow-2xl border border-white/10 mx-auto w-[90%] md:w-full mt-4 md:mt-0'
+                            }`}>
+                              <SelfView 
+                                isCameraOn={isCameraOn} 
+                                onToggleCamera={() => setIsCameraOn(prev => !prev)} 
+                                isFullScreen={isCameraOn}
+                              />
+                            </div>
+
+                            {/* MOBILE OVERLAY / INTERFACE LAYER */}
+                            <div className={`md:hidden relative z-10 w-full flex-1 flex flex-col transition-all duration-700 ${
+                              isCameraOn ? 'p-6 pointer-events-none' : 'p-4 pointer-events-auto mt-4'
+                            }`}>
+                              
+                              {/* Top Stats - Always visible, adjusts style */}
+                              <div className={`flex justify-between items-start w-full transition-all ${isCameraOn ? 'pointer-events-auto' : ''}`}>
+                                <div className={`flex items-center gap-4 p-2.5 px-5 rounded-2xl border transition-all ${
+                                  isCameraOn 
+                                    ? 'bg-black/40 backdrop-blur-2xl border-white/10 shadow-2xl' 
+                                    : 'bg-white/5 border-white/5'
+                                  }`}>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                                    <span className="text-[10px] font-black tracking-widest uppercase text-white">Live</span>
+                                  </div>
+                                  <div className="w-px h-4 bg-white/20" />
+                                  <div className="flex items-center gap-2 text-gray-300">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                    <span className="text-xs font-bold leading-none">{liveListeners}</span>
+                                  </div>
+                                  <div className="w-px h-4 bg-white/20" />
+                                  <span className="text-xs font-mono font-bold text-gray-400">{formatDuration(streamDuration)}</span>
+                                </div>
+
+                                <button
+                                  onClick={() => setIsConfirmModalOpen(true)}
+                                  className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-2xl shadow-2xl transition-all hover:scale-105 active:scale-95 pointer-events-auto"
+                                >
+                                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                              </div>
+
+                              <div className="flex-1" />
+
+                              {/* Bottom Context: Chat and Controls */}
+                              <div className={`flex flex-col gap-6 transition-all ${isCameraOn ? 'items-end pointer-events-none' : 'items-center pointer-events-auto'}`}>
+                                
+                                {/* Chat Box - Floats in immersive, contained in modal */}
+                                <div className={`w-full transition-all ${
+                                  isCameraOn 
+                                    ? 'pointer-events-auto bg-gradient-to-t from-black/80 to-transparent p-4' 
+                                    : 'bg-white/5 border border-white/10 p-4 rounded-3xl'
+                                  }`}>
+                                  <div className={`space-y-4 overflow-y-auto no-scrollbar pr-2 transition-all ${
+                                    isCameraOn ? 'max-h-[30vh] mb-4' : 'max-h-[20vh] mb-2'
+                                  }`}>
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 shrink-0" />
+                                      <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
+                                        <p className="text-[10px] font-black text-purple-300 uppercase">MusicLover99</p>
+                                        <p className="text-sm text-white/90">Sounds amazing tonight! 🔥</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="relative">
+                                    <input type="text" placeholder="Say something..." className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 px-5 text-sm outline-none focus:border-white/30" />
+                                    <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40">
+                                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className={`flex gap-3 transition-all ${isCameraOn ? 'flex-col pointer-events-auto' : 'w-full justify-center'}`}>
+                                  <button 
+                                    onClick={() => setIsCameraOn(prev => !prev)} 
+                                    className={`w-14 h-14 rounded-full flex items-center justify-center border transition-all ${
+                                      isCameraOn 
+                                        ? 'bg-white text-black border-white' 
+                                        : 'bg-red-500 text-white border-transparent shadow-lg shadow-red-500/20'
+                                    }`}
+                                  >
+                                    {isCameraOn ? (
+                                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    ) : (
+                                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /><line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round" strokeWidth="2" /></svg>
+                                    )}
+                                  </button>
+                                  <div className={`transition-all ${
+                                    isCameraOn 
+                                      ? 'bg-black/60 backdrop-blur-2xl border border-white/10 rounded-3xl p-2 flex flex-col gap-2 shadow-2xl' 
+                                      : 'bg-white/5 border border-white/10 rounded-full px-4 flex items-center gap-4'
+                                    }`}>
+                                    <ControlBar variation="minimal" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* DESKTOP DASHBOARD STYLE (Visible on Desktop) */}
+                            <div className="hidden md:flex flex-col gap-6">
+                              <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex items-center justify-between shadow-xl">
+                                <div className="flex items-center gap-6">
+                                  <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Listeners</span>
+                                    <span className="text-xl font-bold text-white flex items-center gap-2">
+                                      <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                      {liveListeners}
+                                    </span>
+                                  </div>
+                                  <div className="w-px h-8 bg-white/10" />
+                                  <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Duration</span>
+                                    <span className="text-xl font-mono font-bold text-white">{formatDuration(streamDuration)}</span>
+                                  </div>
+                                </div>
+                                <div className="bg-[#13151a] p-2 rounded-xl border border-white/5">
+                                  <ControlBar variation="minimal" />
+                                </div>
+                              </div>
+
+                              {/* Desktop Chat Box */}
+                              <div className="bg-black/30 border border-white/5 rounded-2xl h-64 flex flex-col p-4 shadow-inner">
+                                <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3 px-1">Live Chat</span>
+                                <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col justify-end gap-3 pb-2">
+                                  <div className="text-xs text-gray-500 text-center mb-2 italic">Broadcast started</div>
+                                  <div className="text-sm border border-transparent hover:bg-white/5 p-2 rounded-xl transition-colors"><span className="font-bold text-purple-400 mr-2">MusicLover99:</span> Sounds amazing tonight! 🔥</div>
+                                  <div className="text-sm border border-transparent hover:bg-white/5 p-2 rounded-xl transition-colors"><span className="font-bold text-pink-400 mr-2">VibeCheck:</span> Can you play the new track? 🚀</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <RoomAudioRenderer />
+                          </LiveKitRoom>
+                        ) : null}
                       </div>
-                    </LiveKitRoom>
+                    </div>
                   ) : (
                     <div className="aspect-video bg-black/50 border border-white/5 rounded-xl flex items-center justify-center overflow-hidden relative">
                       <svg className="w-20 h-20 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -487,6 +648,7 @@ export default function CreatorPodcastsPage() {
         confirmText="End Stream"
         type="danger"
       />
-    </AuthGuard>
-  );
+    </>
+  </AuthGuard>
+);
 }

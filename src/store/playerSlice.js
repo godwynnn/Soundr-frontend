@@ -24,9 +24,13 @@ const playerSlice = createSlice({
     repeatMode: 'none', // 'none', 'all', 'one'
     isShuffled: false,
     isMinimized: false,
+    isStreaming: false, // New state to track if a live stream is active (hides global player)
     shuffleQueue: [], // Pre-shuffled list for deterministic shuffle navigation
   },
   reducers: {
+    setStreaming: (state, action) => {
+      state.isStreaming = action.payload;
+    },
     setTrack: (state, action) => {
       if (!action.payload) return;
       state.currentTrack = action.payload;
@@ -116,6 +120,7 @@ const playerSlice = createSlice({
 });
 
 export const { 
+  setStreaming,
   setTrack, 
   setTrackWithQueue, 
   togglePlay, 
