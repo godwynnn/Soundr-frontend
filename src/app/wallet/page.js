@@ -24,6 +24,24 @@ function WalletDashboard() {
   const [isTransactionDetailModalOpen, setIsTransactionDetailModalOpen] = useState(false);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [pointsToConvert, setPointsToConvert] = useState('');
+  
+  // Withdrawal States
+  const [isWithdrawDrawerOpen, setIsWithdrawDrawerOpen] = useState(false);
+  const [withdrawTab, setWithdrawTab] = useState('details');
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [banks, setBanks] = useState([]);
+  const [selectedBank, setSelectedBank] = useState(null);
+  const [accountNumber, setAccountNumber] = useState('');
+  const [resolvedAccountName, setResolvedAccountName] = useState('');
+  const [isResolving, setIsResolving] = useState(false);
+  const [isFetchingBanks, setIsFetchingBanks] = useState(false);
+  const [isInitiatingWithdrawal, setIsInitiatingWithdrawal] = useState(false);
+  const [withdrawalResult, setWithdrawalResult] = useState(null); // { status: 'success' | 'error', message: string }
+  const [withdrawStep, setWithdrawStep] = useState('setup'); // 'setup' | 'amount'
+  const [beneficiaries, setBeneficiaries] = useState([]);
+  const [isFetchingBeneficiaries, setIsFetchingBeneficiaries] = useState(false);
+  const [payoutRecipient, setPayoutRecipient] = useState(null);
+
   const itemsPerPage = 8;
 
   const POINT_PRICE = 200; // 1 Support Point = ₦200
@@ -36,7 +54,11 @@ function WalletDashboard() {
     setIsHypeModalOpen(false);
     setIsTransactionDetailModalOpen(false);
     setIsConvertModalOpen(false);
+    setIsConvertModalOpen(false);
     setPurchaseResult(null);
+    setWithdrawalResult(null);
+    setWithdrawStep('setup');
+    setPayoutRecipient(null);
     setPointsToBuy('');
     setHypePointsToBuy('');
     setPointsToConvert('');
@@ -160,6 +182,182 @@ function WalletDashboard() {
       setIsLoading(false);
     }
   };
+
+  const fetchBanks = async () => {
+    if (banks.length > 0) return;
+    setIsFetchingBanks(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_URL}/api/payment/banks/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setBanks(result.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch banks:", error);
+    } finally {
+      setIsFetchingBanks(false);
+    }
+  };
+
+  const fetchBeneficiaries = async () => {
+    setIsFetchingBeneficiaries(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${API_URL}/api/payment/beneficiaries/`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setBeneficiaries(result || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch beneficiaries:", error);
+    } finally {
+      setIsFetchingBeneficiaries(false);
+    }
+  };
+
+  useEffect(() => {
+    const resolveAccount = async () => {
+      if (accountNumber.length === 10 && selectedBank) {
+        setIsResolving(true);
+        setResolvedAccountName('');
+        try {
+          const token = localStorage.getItem('access_token');
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          const response = await fetch(`${API_URL}/api/payment/resolve-account/`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              account_number: accountNumber,
+              bank_code: selectedBank.code
+            })
+          });
+          if (response.ok) {
+            const result = await response.json();
+            if (result.status && result.data) {
+              setResolvedAccountName(result.data.account_name);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to resolve account:", error);
+        } finally {
+          setIsResolving(false);
+        }
+      } else {
+        setResolvedAccountName('');
+      }
+    };
+
+    resolveAccount();
+  }, [accountNumber, selectedBank]);
+
+  const handleNextStep = async () => {
+    if (!accountNumber || !selectedBank || !resolvedAccountName) {
+      setWithdrawalResult({ status: 'error', message: "Please fill in all bank details." });
+      return;
+    }
+
+    try {
+      setIsInitiatingWithdrawal(true);
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      const response = await fetch(`${API_URL}/api/payment/create-transfer-recipient/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          account_number: accountNumber,
+          bank_code: selectedBank.code,
+          bank_name: selectedBank.name,
+          name: resolvedAccountName
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setPayoutRecipient(result);
+        setWithdrawStep('amount');
+        setWithdrawalResult(null);
+      } else {
+        setWithdrawalResult({ 
+          status: 'error', 
+          message: result.message || "Failed to setup recipient. Please check details." 
+        });
+      }
+    } catch (error) {
+      console.error("Setup error:", error);
+      setWithdrawalResult({ status: 'error', message: "An error occurred during verification." });
+    } finally {
+      setIsInitiatingWithdrawal(false);
+    }
+  };
+
+  const handleSelectBeneficiary = (beneficiary) => {
+    setPayoutRecipient({
+      recipient_code: beneficiary.bank_account.recipient_code,
+      bank_account: beneficiary.bank_account,
+      beneficiary: beneficiary
+    });
+    setWithdrawStep('amount');
+    setWithdrawalResult(null);
+  };
+
+  const handleInitiateWithdrawal = async () => {
+    if (!withdrawalAmount || !payoutRecipient) {
+      setWithdrawalResult({ status: 'error', message: "Please enter withdrawal amount." });
+      return;
+    }
+
+    if (parseFloat(withdrawalAmount) < 1000) {
+      setWithdrawalResult({ status: 'error', message: "Minimum withdrawal amount is ₦1,000.00." });
+      return;
+    }
+
+    if (parseFloat(withdrawalAmount) > (walletData?.balance || 0)) {
+      setWithdrawalResult({ status: 'error', message: "Insufficient wallet balance." });
+      return;
+    }
+
+    try {
+      setIsInitiatingWithdrawal(true);
+      
+      // Simulation of payout as requested (No endpoint for payout yet)
+      setTimeout(() => {
+        setWithdrawalResult({ 
+          status: 'success', 
+          message: `Payout of ${withdrawalAmount} initiated successfully. Funds will arrive within 24-48 hours.` 
+        });
+        
+        // Refresh wallet data normally here
+        setIsInitiatingWithdrawal(false);
+        setWithdrawalAmount('');
+        // We stay on this screen to show success or ideally close drawer
+      }, 1500);
+
+    } catch (error) {
+      console.error("Withdrawal error:", error);
+      setWithdrawalResult({ status: 'error', message: "An error occurred while initiating withdrawal." });
+      setIsInitiatingWithdrawal(false);
+    }
+  };
+
 
 
   console.log(paymentStatus, activeReference);
@@ -345,7 +543,15 @@ function WalletDashboard() {
               </h3>
             </div>
             <div className="flex flex-wrap gap-4 mt-8">
-              <button className="px-8 py-3 bg-white text-indigo-700 font-bold rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2 shadow-lg active:scale-95">
+              <button
+                onClick={() => {
+                  setIsWithdrawDrawerOpen(true);
+                  setWithdrawStep('setup');
+                  fetchBanks();
+                  fetchBeneficiaries();
+                }}
+                className="px-8 py-3 bg-white text-indigo-700 font-bold rounded-xl hover:bg-slate-100 transition-all flex items-center gap-2 shadow-lg active:scale-95"
+              >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                 Withdraw
               </button>
@@ -624,7 +830,7 @@ function WalletDashboard() {
               </button>
             </div>
 
-            <div className={`flex flex-col gap-4 overflow-y-auto flex-1 ${checkoutUrl && paymentStatus === 'pending' ? 'p-0 bg-white rounded-b-xl' : 'p-6'}`}>
+            <div className={`flex flex-col gap-4 overflow-y-auto custom-scrollbar flex-1 ${checkoutUrl && paymentStatus === 'pending' ? 'p-0 bg-white rounded-b-xl' : 'p-6'}`}>
               {paymentStatus === 'success' ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-[fade_0.4s_ease-out]">
                   <div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-[bounce_1s_infinite]">
@@ -1154,6 +1360,242 @@ function WalletDashboard() {
         </div>
       )}
 
+      {/* Withdrawal Drawer */}
+      {isWithdrawDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fade_0.2s_ease-out_forwards]"
+            onClick={() => setIsWithdrawDrawerOpen(false)}
+          ></div>
+
+          {/* Drawer Panel */}
+          <div className="relative w-full max-w-md bg-[#12141a] h-full shadow-2xl border-l border-white/10 flex flex-col animate-[slideIn_0.3s_ease-out_forwards]">
+            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-bold text-white tracking-tight">Withdraw Funds</h2>
+                <p className="text-xs text-gray-500 font-medium">Transfer funds to your bank account.</p>
+              </div>
+              <button
+                onClick={() => setIsWithdrawDrawerOpen(false)}
+                className="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            {/* Tabs (Step 1 Setup) */}
+            {withdrawStep === 'setup' && (
+              <div className="px-6 py-4 flex gap-2">
+                <button
+                  onClick={() => setWithdrawTab('details')}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${withdrawTab === 'details' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-white/5 text-gray-500 hover:bg-white/10'}`}
+                >
+                  Bank Details
+                </button>
+                <button
+                  onClick={() => setWithdrawTab('beneficiaries')}
+                  className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${withdrawTab === 'beneficiaries' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20' : 'bg-white/5 text-gray-500 hover:bg-white/10'}`}
+                >
+                  Beneficiaries
+                </button>
+              </div>
+            )}
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 flex flex-col gap-8">
+              {withdrawStep === 'setup' ? (
+                <>
+                  {withdrawTab === 'details' ? (
+                    <div className="flex flex-col gap-8 animate-[fade_0.3s_ease-out]">
+                      {/* Bank Selection */}
+                      <div className="flex flex-col gap-3">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Select Bank</label>
+                        <div className="relative">
+                          {isFetchingBanks ? (
+                            <div className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 flex items-center justify-between text-gray-700 font-bold italic">
+                              <span>Fetching Banks...</span>
+                              <div className="w-4 h-4 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                            </div>
+                          ) : (
+                            <select
+                              value={selectedBank?.code || ''}
+                              onChange={(e) => {
+                                const bank = banks.find(b => b.code === e.target.value);
+                                setSelectedBank(bank);
+                              }}
+                              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-sm font-bold text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all appearance-none cursor-pointer"
+                            >
+                              <option value="" className="bg-[#12141a]">Choose a bank</option>
+                              {banks.map((bank, index) => (
+                                <option key={`${bank.code}-${index}`} value={bank.code} className="bg-[#12141a]">
+                                  {bank.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Account Number */}
+                      <div className="flex flex-col gap-3">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Account Number</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            maxLength={10}
+                            placeholder="0123456789"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
+                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-5 text-xl font-black text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all placeholder:text-gray-800 tracking-widest"
+                          />
+                          {isResolving && (
+                            <div className="absolute right-6 top-1/2 -translate-y-1/2">
+                              <div className="w-5 h-5 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                        {resolvedAccountName && (
+                          <div className="px-6 py-4 rounded-xl bg-emerald-500/5 border border-emerald-500/10 flex items-center gap-3 animate-[fade_0.3s_ease-out]">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <p className="text-xs font-black text-emerald-400 uppercase tracking-widest">{resolvedAccountName}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4 animate-[fade_0.3s_ease-out]">
+                      {isFetchingBeneficiaries ? (
+                        <div className="flex flex-col items-center justify-center p-12 gap-4">
+                          <div className="w-8 h-8 border-3 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+                          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Loading beneficiaries...</p>
+                        </div>
+                      ) : beneficiaries.length > 0 ? (
+                        <div className="flex flex-col gap-3">
+                          {beneficiaries.map((b) => (
+                            <button
+                              key={b.id}
+                              onClick={() => handleSelectBeneficiary(b)}
+                              className="group p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-indigo-500/50 hover:bg-white/[0.06] transition-all text-left flex justify-between items-center"
+                            >
+                              <div>
+                                <h4 className="text-sm font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{b.name || b.bank_account.account_name}</h4>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">{b.bank_account.bank_name} • {b.bank_account.account_number}</p>
+                              </div>
+                              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-600 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                          <div className="w-20 h-20 rounded-3xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6">
+                            <svg className="w-10 h-10 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                          </div>
+                          <h3 className="text-xl font-black text-white mb-2">No Beneficiaries Yet</h3>
+                          <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-[200px]">Save your frequent transfer accounts here for faster withdrawals.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Step 2: Amount Entry */
+                <div className="flex flex-col gap-8 animate-[fade_0.3s_ease-out]">
+                  <div className="p-6 rounded-3xl bg-indigo-500/5 border border-indigo-500/10 flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500/60 mb-1">Sending to</p>
+                      <h4 className="text-lg font-black text-white tracking-tight">{payoutRecipient?.beneficiary?.name || payoutRecipient?.bank_account?.account_name}</h4>
+                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{payoutRecipient?.bank_account?.bank_name} • {payoutRecipient?.bank_account?.account_number}</p>
+                    </div>
+                    <button onClick={() => setWithdrawStep('setup')} className="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                  </div>
+
+                  {/* Amount Section */}
+                  <div className="flex flex-col gap-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Withdrawal Amount</label>
+                    <div className="relative group">
+                      <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-600 transition-colors group-focus-within:text-indigo-500">₦</span>
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        min="0"
+                        autoFocus
+                        value={withdrawalAmount}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || parseFloat(val) >= 0) {
+                            setWithdrawalAmount(val);
+                          }
+                        }}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-12 pr-6 py-5 text-3xl font-black text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all placeholder:text-gray-800"
+                      />
+                    </div>
+                    <div className="flex justify-between items-center px-1">
+                      <p className="text-[10px] text-gray-600 font-bold">MIN: ₦1,000.00</p>
+                      <p className="text-[10px] text-indigo-400 font-black cursor-pointer hover:underline" onClick={() => setWithdrawalAmount(walletData?.balance || '0')}>MAX: ₦{walletData?.balance || '0.00'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Action */}
+            <div className="p-6 border-t border-white/10 bg-white/[0.01]">
+              {withdrawalResult && (
+                <div className={`mb-6 p-4 rounded-xl flex flex-col gap-2 animate-[fade_0.3s_ease-out] ${withdrawalResult.status === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${withdrawalResult.status === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    <p className={`text-[10px] font-black uppercase tracking-widest ${withdrawalResult.status === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {withdrawalResult.status === 'success' ? 'Success' : 'Error'}
+                    </p>
+                  </div>
+                  <p className="text-xs text-white/80 font-medium leading-relaxed">{withdrawalResult.message}</p>
+                </div>
+              )}
+              
+              {withdrawStep === 'setup' ? (
+                <button
+                  disabled={withdrawTab === 'beneficiaries' || !resolvedAccountName || isInitiatingWithdrawal}
+                  onClick={handleNextStep}
+                  className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/5 disabled:text-gray-600 text-white font-black rounded-2xl transition-all shadow-xl active:scale-[0.98] group flex items-center justify-center gap-2"
+                >
+                  {isInitiatingWithdrawal ? (
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Next Step</span>
+                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  disabled={!withdrawalAmount || parseFloat(withdrawalAmount) < 1000 || isInitiatingWithdrawal}
+                  onClick={handleInitiateWithdrawal}
+                  className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-white/5 disabled:text-gray-600 text-white font-black rounded-2xl transition-all shadow-xl active:scale-[0.98] group flex items-center justify-center gap-2"
+                >
+                  {isInitiatingWithdrawal ? (
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <span>Confirm Withdrawal</span>
+                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                    </>
+                  )}
+                </button>
+              )}
+              <p className="text-[10px] text-center text-gray-600 font-bold uppercase tracking-widest mt-4">Payouts may take up to 24-48 hours</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Animation Styles */}
       <style jsx global>{`
         @keyframes zoomIn {
@@ -1181,6 +1623,21 @@ function WalletDashboard() {
           to {
             opacity: 1;
           }
+        }
+
+        /* Custom Scrollbar for Drawer */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 20px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.1);
         }
       `}</style>
     </div>
