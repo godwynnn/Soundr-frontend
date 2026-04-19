@@ -129,9 +129,13 @@ export default function Sidebar() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <span className="text-base">Search</span>
           </button>
-          <Link href={isCreator ? "/creator/podcasts" : "/discover"} onClick={() => setIsOpen(false)} className="flex items-center gap-4 px-3 py-2.5 text-gray-400 hover:text-white transition-colors font-medium">
+          <Link href={isCreator ? "/creator/podcasts" : "/discover"} onClick={() => setIsOpen(false)} className={`flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors font-medium ${(!isCreator && pathname === '/discover') ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white'}`}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
             <span className="text-base">{isCreator ? 'Podcast' : 'Discover'}</span>
+          </Link>
+          <Link href="/trending" onClick={() => setIsOpen(false)} className={`flex items-center gap-4 px-3 py-2.5 rounded-lg transition-colors font-medium ${pathname === '/trending' ? 'text-white bg-white/10' : 'text-gray-400 hover:text-white'}`}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            <span className="text-base">Trending</span>
           </Link>
           {isAuthenticated && (
             <>
