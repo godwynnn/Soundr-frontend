@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Play, Zap, Heart, PlusCircle, ChevronRight, TrendingUp } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setPlayerState } from '@/store/playerSlice';
+import { setTrackWithQueue } from '@/store/playerSlice';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -34,11 +34,9 @@ function TrendingPage() {
   }, [activeGenre]);
 
   const handleSongPlay = (song) => {
-    dispatch(setPlayerState({
-      currentSong: song,
-      isPlaying: true,
-      playlist: topSongs,
-      currentIndex: topSongs.findIndex(s => s.id === song.id)
+    dispatch(setTrackWithQueue({
+      track: song,
+      queue: topSongs
     }));
   };
 
