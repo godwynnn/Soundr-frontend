@@ -24,7 +24,7 @@ function WalletDashboard() {
   const [isTransactionDetailModalOpen, setIsTransactionDetailModalOpen] = useState(false);
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [pointsToConvert, setPointsToConvert] = useState('');
-  
+
   // Withdrawal States
   const [isWithdrawDrawerOpen, setIsWithdrawDrawerOpen] = useState(false);
   const [withdrawTab, setWithdrawTab] = useState('details');
@@ -296,9 +296,9 @@ function WalletDashboard() {
         setWithdrawStep('amount');
         setWithdrawalResult(null);
       } else {
-        setWithdrawalResult({ 
-          status: 'error', 
-          message: result.message || "Failed to setup recipient. Please check details." 
+        setWithdrawalResult({
+          status: 'error',
+          message: result.message || "Failed to setup recipient. Please check details."
         });
       }
     } catch (error) {
@@ -310,9 +310,10 @@ function WalletDashboard() {
   };
 
   const handleSelectBeneficiary = (beneficiary) => {
+    console.log(beneficiary)
     setPayoutRecipient({
-      recipient_code: beneficiary.bank_account.recipient_code,
-      bank_account: beneficiary.bank_account,
+      recipient_code: beneficiary.bank_account_details.recipient_code,
+      bank_account: beneficiary.bank_account_details,
       beneficiary: beneficiary
     });
     setWithdrawStep('amount');
@@ -337,19 +338,53 @@ function WalletDashboard() {
 
     try {
       setIsInitiatingWithdrawal(true);
-      
-      // Simulation of payout as requested (No endpoint for payout yet)
-      setTimeout(() => {
-        setWithdrawalResult({ 
-          status: 'success', 
-          message: `Payout of ${withdrawalAmount} initiated successfully. Funds will arrive within 24-48 hours.` 
+
+      const token = localStorage.getItem('access_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+      const recipientCode = payoutRecipient?.recipient_code
+        || payoutRecipient?.bank_account_details?.recipient_code
+        || payoutRecipient?.bank_account?.recipient_code;
+
+      if (!recipientCode) {
+        setWithdrawalResult({ status: 'error', message: "Invalid recipient selected." });
+        setIsInitiatingWithdrawal(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/payment/initiate-transfer/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          amount: parseFloat(withdrawalAmount),
+          recipient_code: recipientCode,
+          reason: "Wallet Withdrawal"
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setWithdrawalResult({
+          status: 'success',
+          message: `Payout of ₦${withdrawalAmount} initiated successfully. Funds will arrive within 24-48 hours.`
         });
-        
-        // Refresh wallet data normally here
+
+        // Optimistically deduct balance
+        setWalletData(prev => prev ? { ...prev, balance: prev.balance - parseFloat(withdrawalAmount) } : prev);
+
         setIsInitiatingWithdrawal(false);
         setWithdrawalAmount('');
-        // We stay on this screen to show success or ideally close drawer
-      }, 1500);
+      } else {
+        setWithdrawalResult({
+          status: 'error',
+          message: result.error || result.message || "Failed to initiate transfer. Please try again."
+        });
+        setIsInitiatingWithdrawal(false);
+      }
 
     } catch (error) {
       console.error("Withdrawal error:", error);
@@ -516,6 +551,9 @@ function WalletDashboard() {
     if (currentPage > 1) setCurrentPage(prev => prev - 1);
   };
 
+
+
+  console.log(payoutRecipient)
   return (
     <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-10 md:gap-12 mt-16 md:mt-0 animate-[fade-in_0.5s_ease-out]">
       {/* Header */}
@@ -1474,21 +1512,24 @@ function WalletDashboard() {
                         </div>
                       ) : beneficiaries.length > 0 ? (
                         <div className="flex flex-col gap-3">
-                          {beneficiaries.map((b) => (
-                            <button
-                              key={b.id}
-                              onClick={() => handleSelectBeneficiary(b)}
-                              className="group p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-indigo-500/50 hover:bg-white/[0.06] transition-all text-left flex justify-between items-center"
-                            >
-                              <div>
-                                <h4 className="text-sm font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{b.name || b.bank_account.account_name}</h4>
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">{b.bank_account.bank_name} • {b.bank_account.account_number}</p>
-                              </div>
-                              <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-600 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                              </div>
-                            </button>
-                          ))}
+                          {beneficiaries.map((b) => {
+
+                            return (
+                              <button
+                                key={b.id}
+                                onClick={() => handleSelectBeneficiary(b)}
+                                className="group p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-indigo-500/50 hover:bg-white/[0.06] transition-all text-left flex justify-between items-center"
+                              >
+                                <div>
+                                  <h4 className="text-sm font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-tight">{b.name || b.bank_account.account_name}</h4>
+                                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">{b.bank_account_details.bank_name} • {b.bank_account_details.account_number || b.bank_account.account_number}</p>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-600 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition-all">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                </div>
+                              </button>
+                            )
+                          })}
                         </div>
                       ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
@@ -1509,7 +1550,7 @@ function WalletDashboard() {
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500/60 mb-1">Sending to</p>
                       <h4 className="text-lg font-black text-white tracking-tight">{payoutRecipient?.beneficiary?.name || payoutRecipient?.bank_account?.account_name}</h4>
-                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{payoutRecipient?.bank_account?.bank_name} • {payoutRecipient?.bank_account?.account_number}</p>
+                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{payoutRecipient?.beneficiary?.bank_account_details?.bank_name || payoutRecipient?.beneficiary?.bank_account?.bank_name} • {payoutRecipient?.beneficiary?.bank_account_details?.account_number || payoutRecipient?.beneficiary?.bank_account?.account_number}</p>
                     </div>
                     <button onClick={() => setWithdrawStep('setup')} className="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -1558,7 +1599,7 @@ function WalletDashboard() {
                   <p className="text-xs text-white/80 font-medium leading-relaxed">{withdrawalResult.message}</p>
                 </div>
               )}
-              
+
               {withdrawStep === 'setup' ? (
                 <button
                   disabled={withdrawTab === 'beneficiaries' || !resolvedAccountName || isInitiatingWithdrawal}
