@@ -13,6 +13,7 @@ export default function ProfileIdPage() {
 
   const [profileUser, setProfileUser] = useState(null);
   const [walletData, setWalletData] = useState(null);
+  const [kycData, setKycData] = useState(null);
   const [libraryData, setLibraryData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -43,6 +44,13 @@ export default function ProfileIdPage() {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (libraryRes.ok) setLibraryData(await libraryRes.json());
+          
+          if (currentUser?.is_creator) {
+            const kycRes = await fetch(`${API_URL}/api/kyc/status/`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (kycRes.ok) setKycData(await kycRes.json());
+          }
         } else {
           // Fetch Public Profile Data
           const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -162,6 +170,11 @@ export default function ProfileIdPage() {
                     >
                       Edit Profile
                     </button>
+                    {profileUser?.is_creator && (
+                      <Link href="/upload" className="px-6 py-2.5 bg-indigo-600 border border-indigo-500 text-white text-sm font-black rounded-xl hover:bg-indigo-500 active:scale-95 transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2">
+                         Upload Song <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                      </Link>
+                    )}
                     <Link href="/library" className="px-6 py-2.5 bg-white/5 border border-white/10 text-white text-sm font-black rounded-xl hover:bg-white/10 active:scale-95 transition-all">
                       View Library
                     </Link>
@@ -282,6 +295,22 @@ export default function ProfileIdPage() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Active Member
                   </p>
                 </div>
+                {isOwner && profileUser?.is_creator && (
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-indigo-600/5 border border-indigo-500/10">
+                    <div>
+                      <p className="text-[10px] font-black text-indigo-400/80 mb-1 uppercase tracking-tighter">Identity (KYC)</p>
+                      <p className={`text-sm font-bold flex items-center gap-2 ${kycData?.status === 'approved' ? 'text-emerald-500' : kycData?.status === 'pending' ? 'text-blue-400' : kycData?.status === 'rejected' ? 'text-red-400' : 'text-amber-500'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${kycData?.status === 'approved' ? 'bg-emerald-500' : kycData?.status === 'pending' ? 'bg-blue-400 animate-pulse' : kycData?.status === 'rejected' ? 'bg-red-400' : 'bg-amber-500 animate-pulse'}`} /> 
+                        {kycData?.status ? kycData.status.charAt(0).toUpperCase() + kycData.status.slice(1) : 'Unverified'}
+                      </p>
+                    </div>
+                    {kycData?.status !== 'approved' && kycData?.status !== 'pending' && (
+                      <Link href="/kyc" className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+                        Verify
+                      </Link>
+                    )}
+                  </div>
+                )}
                 {isOwner && (
                   <>
                     <div>

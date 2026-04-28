@@ -29,6 +29,8 @@ export default function SongDetail({ params }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showHeartBurst, setShowHeartBurst] = useState(0);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -47,6 +49,7 @@ export default function SongDetail({ params }) {
       })
       .then(data => {
         setSong(data);
+        setComments(data.comments || []);
         setHypeCount(data.hype_count || 0);
         setLiked(data.is_liked || false);
         setLikesCount(data.likes_count || 0);
@@ -170,6 +173,33 @@ export default function SongDetail({ params }) {
       setIsFollowLoading(false);
     }
   });
+
+  const handleComment = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      alert("Please login to comment.");
+      return;
+    }
+    if (!newComment.trim()) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/listener/songs/${songId}/comment/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: newComment })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComments(prev => [data, ...prev]);
+        setNewComment("");
+      }
+    } catch (err) {
+      console.error("Comment failed:", err);
+    }
+  };
 
   if (isLoading || !song) {
     return (
@@ -378,26 +408,49 @@ export default function SongDetail({ params }) {
 
       {/* 💬 Comments Section */}
       <section className="w-full mt-8">
-        <h2 className="text-2xl font-bold mb-6">Comments ({song.comments.length})</h2>
+        <h2 className="text-2xl font-bold mb-6">Comments ({comments.length})</h2>
+        
+        {mounted && isAuthenticated ? (
+          <form onSubmit={handleComment} className="flex flex-col gap-4 mb-8">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="What are your thoughts?"
+              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none h-24"
+            />
+            <button
+              type="submit"
+              disabled={!newComment.trim()}
+              className="self-end bg-indigo-500 text-white px-6 py-2 rounded-full font-bold hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:hover:bg-indigo-500"
+            >
+              Post Comment
+            </button>
+          </form>
+        ) : (
+          <div className="mb-8 p-4 bg-white/5 border border-white/10 rounded-xl text-center text-gray-400">
+            Please <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-bold">login</Link> to post a comment.
+          </div>
+        )}
+
         <div className="flex flex-col gap-8">
-          {song.comments.map((comment) => (
+          {comments.length > 0 ? comments.map((comment) => (
             <div key={comment.id} className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white uppercase">{comment.avatar_text}</div>
+              <div className="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-sm font-bold text-white uppercase">
+                {comment.username ? comment.username.substring(0, 2) : "AN"}
+              </div>
               <div className="flex flex-col">
                 <div className="flex items-baseline gap-2 mb-1.5">
-                  <span className="font-bold text-[15px]">{comment.user}</span>
-                  <span className="text-xs text-gray-500 font-medium">{comment.time_ago}</span>
+                  <span className="font-bold text-[15px]">{comment.username || "Anonymous"}</span>
+                  <span className="text-xs text-gray-500 font-medium">{new Date(comment.created_at).toLocaleDateString()}</span>
                 </div>
                 <p className="text-[15px] text-gray-300 leading-relaxed">
                   {comment.text}
                 </p>
-                <div className="flex gap-5 mt-3">
-                  <button className="text-xs font-semibold text-gray-500 hover:text-white transition-colors">Reply</button>
-                  <button className="text-xs font-semibold text-gray-500 hover:text-white flex items-center gap-1.5 transition-colors"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg> {comment.likes}</button>
-                </div>
               </div>
             </div>
-          ))}
+          )) : (
+            <p className="text-gray-600 text-sm">No comments yet. Start the discussion!</p>
+          )}
         </div>
       </section>
 
